@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 project_name='DAPO'
-exp_name='DAPO-Qwen2.5-32B'
+exp_name="DAPO-Qwen2.5-32B_$(date '+%Y%m%d_%H%M%S')" \
 
 adv_estimator=grpo
 
