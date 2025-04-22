@@ -3,6 +3,7 @@ set -euxo pipefail
 
 project_name='GRPO'
 exp_name="doe_kl1e-3_lr1e-6_$(date '+%Y%m%d_%H%M%S')"
+VERL_PPO_LOGGING_LEVEL='DEBUG'
 
 # Paths
 RAY_DATA_HOME=${RAY_DATA_HOME:-"${HOME}/verl"}
@@ -11,6 +12,7 @@ CKPTS_DIR=${CKPTS_DIR:-"${RAY_DATA_HOME}/ckpts/${project_name}/${exp_name}"}
 TRAIN_FILE=${TRAIN_FILE:-"${RAY_DATA_HOME}/data/gsm8k/train.parquet"}
 TEST_FILE=${TEST_FILE:-"${RAY_DATA_HOME}/data/gsm8k/test.parquet"}
 
+export HYDRA_FULL_ERROR=1
 export SGL_DISABLE_TP_MEMORY_INBALANCE_CHECK=True
 PYTHONUNBUFFERED=1 python3 -m my_doe_scripts.src.main_doe \
     actor_rollout_ref.actor.optim.lr=1e-6 \
