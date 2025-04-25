@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 project_name='DAPO'
-exp_name="DAPO-Qwen2.5-32B_$(date '+%Y%m%d_%H%M%S')"
+exp_name="vllm-DAPO-Qwen2.5-32B_$(date '+%Y%m%d_%H%M%S')"
 
 adv_estimator=grpo
 
@@ -58,7 +58,6 @@ gen_tp=4
 ray job submit --no-wait --runtime-env="${RUNTIME_ENV}" \
     --working-dir "${WORKING_DIR}" \
     -- python3 -m recipe.dapo.src.main_dapo \
-    actor_rollout_ref.rollout.name=sglang \
     data.train_files="${TRAIN_FILE}" \
     data.val_files="${TEST_FILE}" \
     data.prompt_key=prompt \
