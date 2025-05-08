@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 project_name='GRPO'
-exp_name="doe_kl1e-3_lr1e-6_$(date '+%Y%m%d_%H%M%S')"
+exp_name="vllm_doe_kl1e-3_lr1e-6_$(date '+%Y%m%d_%H%M%S')"
 VERL_PPO_LOGGING_LEVEL='DEBUG'
 
 # Paths
