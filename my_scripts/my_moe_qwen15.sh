@@ -21,14 +21,14 @@ DIST_CKPT_PATH="${MODEL_PATH}/gptmodel/"
 python scripts/converter_hf_to_mcore.py --hf_model_path $MODEL_PATH --output_path $DIST_CKPT_PATH
 
 # 2. run the script
-NODES=2
+NODES=4
 PP=2
-TP=2
+TP=4
 CP=2
 VLLM_TP=4
 
-# RAY_ADDRESS='auto' ray job submit --working-dir . --
-python3 -m verl.trainer.main_ppo --config-path=./config --config-name='ppo_megatron_trainer'\
+RAY_ADDRESS='auto' ray job submit --working-dir . -- \
+    python3 -m verl.trainer.main_ppo --config-path=./config --config-name='ppo_megatron_trainer' \
     algorithm.adv_estimator=gae \
     data.train_files="$TRAIN_FILE" \
     data.val_files="$TEST_FILE" \
