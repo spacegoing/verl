@@ -1,1 +1,1 @@
-/root/myCodeLab/myverl/my_doe_scripts/run_doe.sh
+/root/myCodeLab/verl/my_doe_scripts/run_doe.sh

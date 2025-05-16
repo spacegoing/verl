@@ -1,1 +1,1 @@
-/root/myCodeLab/myverl/my_doe_scripts/run_ppo_baseline.sh
+/root/myCodeLab/verl/my_doe_scripts/run_ppo_baseline.sh
