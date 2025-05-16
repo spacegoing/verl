@@ -319,6 +319,8 @@ class ActorRolloutRefWorker(Worker):
             total_steps = optim_config.get("total_training_steps", 0)
             num_warmup_steps = int(optim_config.get("lr_warmup_steps", -1))
             warmup_style = optim_config.get("warmup_style", "constant")
+            min_lr_ratio = optim_config.get("min_lr_ratio", 0.0)
+            num_cycles = optim_config.get("num_cycles", 0.5)
             if num_warmup_steps < 0:
                 num_warmup_steps_ratio = optim_config.get("lr_warmup_steps_ratio", 0.0)
                 num_warmup_steps = int(num_warmup_steps_ratio * total_steps)
@@ -328,7 +330,7 @@ class ActorRolloutRefWorker(Worker):
             if warmup_style == "constant":
                 actor_lr_scheduler = get_constant_schedule_with_warmup(optimizer=actor_optimizer, num_warmup_steps=num_warmup_steps)
             elif warmup_style == "cosine":
-                actor_lr_scheduler = get_cosine_schedule_with_warmup(optimizer=actor_optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=total_steps)
+                actor_lr_scheduler = get_cosine_schedule_with_warmup(optimizer=actor_optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=total_steps, min_lr_ratio=min_lr_ratio, num_cycles=num_cycles)
             else:
                 raise NotImplementedError(f"Warmup style {warmup_style} is not supported")
 
@@ -368,9 +370,11 @@ class ActorRolloutRefWorker(Worker):
                     config=self.config.rollout,
                     tokenizer=self.tokenizer,
                     model_hf_config=self.actor_model_config,
+                    trust_remote_code=trust_remote_code,
                 )
             elif vllm_mode == "spmd":
                 from verl.workers.rollout.vllm_rollout import vLLMAsyncRollout
+
                 vllm_rollout_cls = vLLMRollout if self.config.rollout.mode == "sync" else vLLMAsyncRollout
                 rollout = vllm_rollout_cls(
                     model_path=local_path,
@@ -415,6 +419,7 @@ class ActorRolloutRefWorker(Worker):
                 config=self.config.rollout,
                 tokenizer=self.tokenizer,
                 model_hf_config=self.actor_model_config,
+                trust_remote_code=trust_remote_code,
             )
             log_gpu_memory_usage(f"After building {rollout_name} rollout", logger=logger)
 
@@ -440,6 +445,7 @@ class ActorRolloutRefWorker(Worker):
                 config=self.config.rollout,
                 tokenizer=self.tokenizer,
                 model_hf_config=self.actor_model_config,
+                trust_remote_code=trust_remote_code,
             )
             log_gpu_memory_usage(f"After building {rollout_name} rollout", logger=None)
 
@@ -451,6 +457,7 @@ class ActorRolloutRefWorker(Worker):
                 model_config=self.actor_model_config,
                 full_params="hf" in self.config.rollout.load_format,
                 device_mesh=rollout_device_mesh,
+                offload_param=self._is_offload_param,
             )
             log_gpu_memory_usage("After building sharding manager", logger=None)
 
@@ -785,8 +792,7 @@ class CriticWorker(Worker):
 
         from transformers import AutoConfig, AutoModelForTokenClassification
 
-        trust_remote_code = False
-        critic_model_config = AutoConfig.from_pretrained(local_path, trust_remote_code=trust_remote_code)
+        critic_model_config = AutoConfig.from_pretrained(local_path, trust_remote_code=config.model.get("trust_remote_code", False))
         critic_model_config.num_labels = 1
 
         init_context = get_init_weight_context_manager(use_meta_tensor=not critic_model_config.tie_word_embeddings, mesh=self.device_mesh)
@@ -800,7 +806,7 @@ class CriticWorker(Worker):
                 torch_dtype=torch_dtype,
                 config=critic_model_config,
                 attn_implementation="flash_attention_2",
-                trust_remote_code=trust_remote_code,
+                trust_remote_code=config.model.get("trust_remote_code", False),
             )
 
             use_remove_padding = config.model.get("use_remove_padding", False)
