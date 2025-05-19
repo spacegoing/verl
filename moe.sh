@@ -1,1 +1,1 @@
-/root/myCodeLab/verl/my_scripts/my_moe_qwen15.sh
+/root/myCodeLab/verl/my_scripts/my_moe_qwen330.sh
