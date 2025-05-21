@@ -1,7 +1,10 @@
 set -x
 
-HF_MODEL_PATH=Qwen/Qwen3-30B-A3B
-DIST_CKPT_PATH=${DIST_CKPT_PATH}
+RAY_DATA_HOME=${RAY_DATA_HOME:-"${HOME}/verl"}
+MODEL_PATH=${MODEL_PATH:-"${RAY_DATA_HOME}/models/Qwen3-30B-A3B"}
+HF_MODEL_PATH=$MODEL_PATH
+DIST_CKPT_PATH="${MODEL_PATH}/gptmodel/"
+RUNTIME_ENV=${RUNTIME_ENV:-"${HOME}/myCodeLab/verl/my_scripts/my_runtime_env.yaml"}
 
 python scripts/converter_hf_to_mcore.py --hf_model_path $HF_MODEL_PATH --output_path $DIST_CKPT_PATH
 
@@ -9,17 +12,18 @@ python scripts/converter_hf_to_mcore.py --hf_model_path $HF_MODEL_PATH --output_
 # export VLLM_ATTENTION_BACKEND=XFORMERS
 export CUDA_DEVICE_MAX_CONNECTIONS=1 # For megatron communication/computation overlapping
 
-python3 -m verl.trainer.main_ppo --config-path=config \
+RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" --working-dir . -- \
+    python3 -m verl.trainer.main_ppo --config-path=config \
     --config-name='ppo_megatron_trainer.yaml'\
     algorithm.adv_estimator=grpo \
-    data.train_files=$HOME/data/gsm8k/train.parquet \
-    data.val_files=$HOME/data/gsm8k/test.parquet \
+    data.train_files=$HOME/verl/data/gsm8k/train.parquet \
+    data.val_files=$HOME/verl/data/gsm8k/test.parquet \
     data.train_batch_size=64 \
     data.max_prompt_length=1024 \
     data.max_response_length=2048 \
     data.filter_overlong_prompts=True \
     data.truncation='error' \
-    actor_rollout_ref.model.path= \
+    actor_rollout_ref.model.path=$HF_MODEL_PATH \
     actor_rollout_ref.actor.optim.lr=1e-6 \
     actor_rollout_ref.actor.ppo_mini_batch_size=64 \
     actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=4 \
