@@ -237,7 +237,6 @@ class ActorRolloutRefWorker(MegatronWorker):
                     tokenizer=self.tokenizer,
                     model_hf_config=self.actor_model_config,
                     device_mesh=rollout_device_mesh,
-                    trust_remote_code=trust_remote_code,
                 )
             log_gpu_memory_usage("After building vllm rollout", logger=logger)
 

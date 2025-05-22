@@ -43,12 +43,14 @@ from .model_initializer import (
     Qwen2MoEModel,
     Qwen3MoEModel,
     Qwen25VLModel,
+    Dpskv3Model
 )
 from .weight_converter import (
     McoreToHFWeightConverterDense,
     McoreToHFWeightConverterMixtral,
     McoreToHFWeightConverterQwen2Moe,
     McoreToHFWeightConverterQwen3Moe,
+    McoreToHFWeightConverterDpskv3,
 )
 
 
