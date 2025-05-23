@@ -12,7 +12,7 @@ huggingface-cli download moonshotai/Moonlight-16B-A3B-Instruct
 # change the HF_MODEL_PATH and DIST_CKPT_PATH to your own path
 HF_MODEL_PATH=/data/models/moonshotai/Moonlight-16B-A3B-Instruct
 DIST_CKPT_PATH=/data/mcore_ckpt/Moonlight-16B-A3B-Instruct
-python scripts/converter_hf_to_mcore.py --hf_model_path $HF_MODEL_PATH --output_path $DIST_CKPT_PATH
+python scripts/converter_hf_to_mcore.py --hf_model_path $HF_MODEL_PATH --output_path $DIST_CKPT_PATH --trust_remote_code
 
 
 # 2. run the script
@@ -78,4 +78,3 @@ python3 -m verl.trainer.main_ppo --config-path=./config --config-name='ppo_megat
     critic.megatron.dist_checkpointing_path=$DIST_CKPT_PATH \
     trainer.val_before_train=False \
     trainer.total_epochs=100 $@
-    
