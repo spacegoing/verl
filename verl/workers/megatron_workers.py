@@ -142,7 +142,7 @@ class ActorRolloutRefWorker(MegatronWorker):
         from verl.utils.megatron.optimizer import get_megatron_optimizer
         from verl.utils.megatron_utils import get_model, init_megatron_optim_config
         from verl.utils.model import get_generation_config, print_model_size
-        trust_remote_code=self.config.model.get("trust_remote_code", False)
+        trust_remote_code = self.config.model.get("trust_remote_code", False)
         self._init_hf_config_and_tf_config(model_path, self.dtype, override_model_config, override_transformer_config, trust_remote_code=trust_remote_code)
         self.generation_config = get_generation_config(self.local_path)
 

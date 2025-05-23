@@ -85,7 +85,7 @@ MODEL_INITIALIZER_REGISTRY: Dict[SupportedModel, Type[BaseModelInitializer]] = {
     SupportedModel.QWEN2: DenseModel,
     SupportedModel.QWEN2_MOE: Qwen2MoEModel,
     SupportedModel.MIXTRAL: MixtralModel,
-    SupportedModel.DEEPSEEK_V3: DenseModel,
+    SupportedModel.DEEPSEEK_V3: Dpskv3Model,
     SupportedModel.QWEN2_5_VL: Qwen25VLModel,
     SupportedModel.LLAMA4: DenseModel,
     SupportedModel.QWEN3: DenseModel,
@@ -113,6 +113,7 @@ MODEL_WEIGHT_CONVERTER_REGISTRY: Dict[SupportedModel, Type] = {
     SupportedModel.MIXTRAL: McoreToHFWeightConverterMixtral,
     SupportedModel.QWEN3: McoreToHFWeightConverterDense,
     SupportedModel.QWEN3_MOE: McoreToHFWeightConverterQwen3Moe,
+    SupportedModel.DEEPSEEK_V3: McoreToHFWeightConverterDpskv3,
 }
 
 

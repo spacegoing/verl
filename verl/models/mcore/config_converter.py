@@ -222,6 +222,9 @@ def hf_to_mcore_config_dpskv3(hf_config: PretrainedConfig, dtype: torch.dtype, *
     )
     base_config_dict = asdict(base_config)
 
+    # transformer config default multi_latent_attention = False
+    base_config_dict.update({"multi_latent_attention": True})
+
     mla_rope_config = {
         "beta_fast": 32,
         "beta_slow": 1,
