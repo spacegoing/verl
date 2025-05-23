@@ -191,6 +191,8 @@ def hf_to_mcore_config_dpskv3(hf_config: PretrainedConfig, dtype: torch.dtype, *
         moe_layer_freq[i] = 0
 
     base_config = _get_base_transformer_config(
+        hf_config=hf_config,
+        dtype=dtype,
         activation_func=F.silu,
         use_cpu_initialization=False,
         add_bias_linear=False,
@@ -227,7 +229,7 @@ def hf_to_mcore_config_dpskv3(hf_config: PretrainedConfig, dtype: torch.dtype, *
         "mscale": 1.0,
         "mscale_all_dim": 1.0,
         "original_max_position_embeddings": 4096,
-        # "type": "rope",
+        "type": "rope",
     }
     if "rope_scaling" in hf_config and hf_config.rope_scaling is not None:
         mla_rope_config.update(hf_config.rope_scaling)
