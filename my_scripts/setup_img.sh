@@ -1,8 +1,14 @@
 pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
 pip install gpustat
 apt-get install -y tmux
-# apt-get install -y net-tools iproute2 netcat-openbsd
-
+# apt-get install -y \
+#         net-tools iproute2 netcat-openbsd \
+#         pciutils \
+#         infiniband-diags \
+#         rdma-core \
+#         mstflint \
+#         ibverbs-utils \
+#         perftest
 
 read -r -d '' ALIAS_BLOCK << 'EOF'
 
@@ -59,5 +65,5 @@ run '~/.tmux/plugins/tpm/tpm'
 EOF
 
 
-cd /root/myCodeLab/public/verl/
+cd /root/myCodeLab/host/verl/
 pip install -e .
