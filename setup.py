@@ -23,25 +23,7 @@ version_folder = os.path.dirname(os.path.join(os.path.abspath(__file__)))
 with open(os.path.join(version_folder, "verl/version/version")) as f:
     __version__ = f.read().strip()
 
-install_requires = [
-    "accelerate",
-    "codetiming",
-    "datasets",
-    "dill",
-    "hydra-core",
-    "numpy",
-    "pandas",
-    "peft",
-    "pyarrow>=19.0.0",
-    "pybind11",
-    "pylatexenc",
-    "ray[default]>=2.41.0",
-    "torchdata",
-    "tensordict<=0.6.2",
-    "transformers",
-    "wandb",
-    "packaging>=20.0",
-]
+install_requires = []
 
 TEST_REQUIRES = ["pytest", "pre-commit", "py-spy"]
 PRIME_REQUIRES = ["pyext"]
