@@ -269,7 +269,6 @@ def hf_to_mcore_config_dpskv3(hf_config: PretrainedConfig, dtype: torch.dtype, *
         qk_layernorm=True,
         # Standard MoE parameters
         moe_ffn_hidden_size=hf_config.moe_intermediate_size,
-        moe_token_dispatcher_type="alltoall",
         moe_router_bias_update_rate=0.001,
         moe_router_enable_expert_bias=True,
         moe_router_topk=hf_config.num_experts_per_tok,
@@ -278,7 +277,14 @@ def hf_to_mcore_config_dpskv3(hf_config: PretrainedConfig, dtype: torch.dtype, *
         moe_aux_loss_coeff=getattr(hf_config, "aux_loss_alpha", 0.001),
         moe_router_load_balancing_type="seq_aux_loss",
         moe_shared_expert_overlap=True,
-        # moe_permute_fusion=True, # need TE 2.1+
+        # deepep config
+        moe_token_dispatcher_type="flex",
+        moe_enable_deepep=True,
+        moe_permute_fusion=True, # need TE 2.1+
+        moe_layer_recompute=True,
+        # 'moe_token_drop_policy': config.get('moe_token_drop_policy', 'probs'),
+        # 'moe_expert_capacity_factor': config.get('moe_expert_capacity_factor', 1.25),
+        # 'moe_pad_expert_input_to_capacity': config.get('moe_pad_expert_input_to_capacity', True),
         moe_grouped_gemm=True,
         moe_router_score_function="sigmoid",
         moe_router_pre_softmax=True,
