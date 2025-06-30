@@ -1,7 +1,13 @@
 set -x
 
-HF_MODEL_PATH=Qwen/Qwen3-30B-A3B
-DIST_CKPT_PATH=${DIST_CKPT_PATH}
+# Paths
+HF_MODEL_PATH=/root/myCodeLab/host/downloads/models/Qwen3-30B-A3B
+DIST_CKPT_PATH=/root/myCodeLab/host/downloads/models/Qwen3-30B-A3B_DIST
+TRAIN_FILE=/root/myCodeLab/host/downloads/datasets/dapo_data/dapo-math-17k.parquet
+aime24_test_path=/root/myCodeLab/host/downloads/datasets/dapo_data/aime-2024.parquet
+TEST_FILE="['$aime24_test_path']"
+RUNTIME_ENV=${RUNTIME_ENV:-"${HOME}/myCodeLab/host/verl/my_scripts/my_runtime_env.yaml"}
+
 
 python scripts/converter_hf_to_mcore.py --hf_model_path $HF_MODEL_PATH --output_path $DIST_CKPT_PATH
 
@@ -9,11 +15,12 @@ python scripts/converter_hf_to_mcore.py --hf_model_path $HF_MODEL_PATH --output_
 # export VLLM_ATTENTION_BACKEND=XFORMERS
 export CUDA_DEVICE_MAX_CONNECTIONS=1 # For megatron communication/computation overlapping
 
-python3 -m verl.trainer.main_ppo --config-path=config \
+RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
+    python3 -m verl.trainer.main_ppo --config-path=config \
     --config-name='ppo_megatron_trainer.yaml'\
     algorithm.adv_estimator=grpo \
-    data.train_files=$HOME/data/gsm8k/train.parquet \
-    data.val_files=$HOME/data/gsm8k/test.parquet \
+    data.train_files="${TRAIN_FILE}" \
+    data.val_files="${TEST_FILE}" \
     data.train_batch_size=64 \
     data.max_prompt_length=1024 \
     data.max_response_length=2048 \
@@ -21,11 +28,11 @@ python3 -m verl.trainer.main_ppo --config-path=config \
     data.truncation='error' \
     actor_rollout_ref.model.path=$HF_MODEL_PATH \
     actor_rollout_ref.actor.optim.lr=1e-6 \
-    actor_rollout_ref.actor.ppo_mini_batch_size=64 \
-    actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=4 \
+    actor_rollout_ref.actor.ppo_mini_batch_size=32 \
+    actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=2 \
     actor_rollout_ref.actor.megatron.pipeline_model_parallel_size=2 \
     actor_rollout_ref.actor.megatron.tensor_model_parallel_size=4 \
-    actor_rollout_ref.actor.megatron.expert_model_parallel_size=4 \
+    actor_rollout_ref.actor.megatron.expert_model_parallel_size=2 \
     actor_rollout_ref.actor.megatron.use_dist_checkpointing=True \
     actor_rollout_ref.actor.megatron.dist_checkpointing_path=$DIST_CKPT_PATH \
     actor_rollout_ref.actor.use_kl_loss=True \
@@ -50,7 +57,7 @@ python3 -m verl.trainer.main_ppo --config-path=config \
     trainer.project_name='verl_grpo_example_gsm8k_math' \
     trainer.experiment_name='qwen3_30b_moe_megatron' \
     trainer.n_gpus_per_node=8 \
-    trainer.nnodes=4 \
+    trainer.nnodes=2 \
     trainer.save_freq=20 \
     trainer.test_freq=5 \
     trainer.total_epochs=15 $@
