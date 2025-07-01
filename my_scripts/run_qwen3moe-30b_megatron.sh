@@ -1,5 +1,10 @@
 set -x
 
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOGFILE="run_${TIMESTAMP}.log"
+exec &> >(tee -a "$LOGFILE")
+echo "Logging all output to: $LOGFILE"
+
 # Paths
 HF_MODEL_PATH=/root/myCodeLab/host/downloads/models/Qwen3-30B-A3B
 DIST_CKPT_PATH=/root/myCodeLab/host/downloads/models/Qwen3-30B-A3B_DIST
