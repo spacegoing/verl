@@ -216,6 +216,11 @@ def hf_to_mcore_config_qwen3moe(hf_config: PretrainedConfig, dtype: torch.dtype,
         moe_router_load_balancing_type="none",  # turn off aux_loss as it hurts perf in RL
         moe_grouped_gemm=True,
         moe_router_score_function="softmax",
+        # deepep config
+        moe_token_dispatcher_type="flex",
+        moe_enable_deepep=True,
+        moe_permute_fusion=True, # need TE 2.1+
+        moe_layer_recompute=True,
         # Other optimizations
         persist_layer_norm=True,
         bias_activation_fusion=True,
