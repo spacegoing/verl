@@ -40,7 +40,8 @@ logger.setLevel(os.getenv("VERL_PPO_LOGGING_LEVEL", "WARN"))
 """
 Megatron Hybrid Engine:
 - During training, only the current pp stage holds the parameters
-- Before inference, broadcast the parameters of the current pp rank to all other pp ranks (all pp ranks holds all the parameters)
+- Before inference, broadcast the parameters of the current pp rank to all other pp ranks (all pp ranks holds all 
+  the parameters)
 - Bind the parameters to the inference engine
 - Do inference in tp. pp is treated as additional dp
 - After inference, all the parameters that doesn't belong to this pp rank is freed.
@@ -80,6 +81,7 @@ class MegatronSGLangShardingManager(BaseShardingManager):
         weight_converter,
         device_mesh: DeviceMesh | None = None,
         offload_param: bool = False,
+        bridge=None,
     ):
         self.actor_module = actor_module
         self.inference_engine = inference_engine
@@ -89,6 +91,7 @@ class MegatronSGLangShardingManager(BaseShardingManager):
         self.layer_name_mapping = layer_name_mapping
         self.weight_converter = weight_converter
         self.device_mesh = device_mesh
+        self.bridge = bridge
         self.offload_param = offload_param
 
         if self.device_mesh is not None:
@@ -113,13 +116,16 @@ class MegatronSGLangShardingManager(BaseShardingManager):
         with simple_timer("reshard", self.timing):
             if self.offload_param:
                 load_megatron_model_to_gpu(self.actor_module)
-            per_tensor_param = per_tensor_generator(
-                self.actor_module,
-                self.model_config,
-                self.weight_converter,
-                self.transformer_config,
-                self.layer_name_mapping,
-            )
+            if self.bridge is not None:
+                per_tensor_param = self.bridge.export_weights(self.actor_module)
+            else:
+                per_tensor_param = per_tensor_generator(
+                    self.actor_module,
+                    self.model_config,
+                    self.weight_converter,
+                    self.transformer_config,
+                    self.layer_name_mapping,
+                )
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self.update_weights(per_tensor_param))
             if self.offload_param:
@@ -178,13 +184,16 @@ class MegatronSGLangShardingManager(BaseShardingManager):
 
     @GPUMemoryLogger(role="FSDPSGLangShardingManager enter", logger=logger)
     async def wake_up(self):
-        per_tensor_param = per_tensor_generator(
-            self.actor_module,
-            self.model_config,
-            self.weight_converter,
-            self.transformer_config,
-            self.layer_name_mapping,
-        )
+        if self.bridge is not None:
+            per_tensor_param = self.bridge.export_weights(self.actor_module)
+        else:
+            per_tensor_param = per_tensor_generator(
+                self.actor_module,
+                self.model_config,
+                self.weight_converter,
+                self.transformer_config,
+                self.layer_name_mapping,
+            )
         await self.update_weights(per_tensor_param)
         # important: need to manually set the random states of each tp to be identical.
         if self.device_mesh is not None:

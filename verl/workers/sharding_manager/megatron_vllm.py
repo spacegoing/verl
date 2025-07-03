@@ -91,19 +91,25 @@ class MegatronVLLMShardingManager(BaseShardingManager):
         weight_converter: McoreToHFWeightConverterBase,
         device_mesh,
         offload_param: bool = True,
+        bridge=None,
     ):
         self.actor_module = actor_module
         self.inference_engine = inference_engine
         self.offload_param = offload_param
 
         # For AsyncLLM, inference_engine and model_runner are defer initialized in vLLMAsyncRollout.load_model
-        self.model_runner = self.inference_engine.llm_engine.model_executor.driver_worker.worker.model_runner if self.inference_engine else None
+        self.model_runner = (
+            self.inference_engine.llm_engine.model_executor.driver_worker.worker.model_runner
+            if self.inference_engine
+            else None
+        )
 
         self.model_config = model_config
         self.transformer_config = transformer_config
         self.rollout_config = rollout_config
         self.layer_name_mapping = layer_name_mapping
         self.weight_converter = weight_converter
+        self.bridge = bridge
         # initialize groups for vllm inference
         self.rank = torch.distributed.get_rank()
         self.world_size = torch.distributed.get_world_size()
@@ -148,13 +154,16 @@ class MegatronVLLMShardingManager(BaseShardingManager):
                     self.inference_engine.wake_up(tags=["weights"])
                 else:
                     self.inference_engine.wake_up()
-            per_tensor_param = per_tensor_generator(
-                self.actor_module,
-                self.model_config,
-                self.weight_converter,
-                self.transformer_config,
-                self.layer_name_mapping,
-            )
+            if self.bridge is not None:
+                per_tensor_param = self.bridge.export_weights(self.actor_module)
+            else:
+                per_tensor_param = per_tensor_generator(
+                    self.actor_module,
+                    self.model_config,
+                    self.weight_converter,
+                    self.transformer_config,
+                    self.layer_name_mapping,
+                )
             model = self.model_runner.model
             patch_vllm_moe_model_weight_loader(model)
             loaded_params = model.load_weights(per_tensor_param)
@@ -165,7 +174,10 @@ class MegatronVLLMShardingManager(BaseShardingManager):
                 offload_megatron_model_to_cpu(self.actor_module)
             get_torch_device().empty_cache()
 
-            if self.rollout_config.free_cache_engine and "tags" in inspect.signature(self.inference_engine.wake_up).parameters:
+            if (
+                self.rollout_config.free_cache_engine
+                and "tags" in inspect.signature(self.inference_engine.wake_up).parameters
+            ):
                 self.inference_engine.wake_up(tags=["kv_cache"])
 
             # important: need to manually set the random states of each tp to be identical.
