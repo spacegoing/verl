@@ -269,10 +269,13 @@ def hf_to_mcore_config_qwen3moe(
         moe_grouped_gemm=True,
         moe_router_score_function="softmax",
         # deepep config
+        moe_shared_expert_overlap=False,
         moe_token_dispatcher_type="flex",
         moe_enable_deepep=True,
         moe_permute_fusion=True, # need TE 2.1+
-        moe_layer_recompute=True,
+        recompute_granularity="selective",
+        # moe_layer_recompute=True,
+        # moe_router_dtype="fp32",
         # Other optimizations
         persist_layer_norm=True,
         bias_activation_fusion=True,
@@ -338,12 +341,15 @@ def hf_to_mcore_config_dpskv3(
         moe_shared_expert_intermediate_size=hf_config.moe_intermediate_size * hf_config.n_shared_experts,
         moe_aux_loss_coeff=getattr(hf_config, "aux_loss_alpha", 0.001),
         moe_router_load_balancing_type="seq_aux_loss",
-        moe_shared_expert_overlap=True,
+        # moe_shared_expert_overlap=True,
         # deepep config
+        moe_shared_expert_overlap=False,
         moe_token_dispatcher_type="flex",
         moe_enable_deepep=True,
         moe_permute_fusion=True, # need TE 2.1+
-        moe_layer_recompute=True,
+        recompute_granularity="selective",
+        # moe_router_dtype="fp32",
+        # moe_layer_recompute=True,
         # 'moe_token_drop_policy': config.get('moe_token_drop_policy', 'probs'),
         # 'moe_expert_capacity_factor': config.get('moe_expert_capacity_factor', 1.25),
         # 'moe_pad_expert_input_to_capacity': config.get('moe_pad_expert_input_to_capacity', True),

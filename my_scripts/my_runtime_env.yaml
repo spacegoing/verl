@@ -4,8 +4,8 @@ env_vars:
   RAY_OVERRIDE_JOB_RUNTIME_ENV: "1"
   WANDB_MODE: "offline"
   WANDB_DIR: "/tmp/my_wandb_logs"
-  GLOO_SOCKET_IFNAME: "ibs49"
-  NCCL_SOCKET_IFNAME: "ibs49"
+  # GLOO_SOCKET_IFNAME: "ibs49"
+  # NCCL_SOCKET_IFNAME: "ibs49"
   # GLOO_SOCKET_IFNAME: "eth0"
   # NCCL_SOCKET_IFNAME: "eth0"
   # Useful debugging flags we've identified.
