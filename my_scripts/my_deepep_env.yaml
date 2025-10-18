@@ -20,6 +20,7 @@ env_vars:
   # Other potentially useful variables from your scripts.
   CUDA_DEVICE_MAX_CONNECTIONS: "1"
   VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
+  VLLM_ALLREDUCE_USE_SYMM_MEM: "0"
   HYDRA_FULL_ERROR: "1"
 
   # Path additions
