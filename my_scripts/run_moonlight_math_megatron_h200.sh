@@ -12,8 +12,15 @@ set -xeuo pipefail
 # 3. remove the `quantization_config` in the DeepSeek-V3's `config.json` and 
 # set `num_nextn_predict_layers=0` to disable MTP, which is not currently supported
 
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOGFILE="logs/run_${TIMESTAMP}.log"
+exec &> >(tee -a "$LOGFILE")
+echo "Logging all output to: $LOGFILE"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/env.sh" ] && source "${SCRIPT_DIR}/env.sh"
+
+RUNTIME_ENV=${RUNTIME_ENV:-"${HOME}/myCodeLab/host/verl/my_scripts/my_deepep_env.yaml"}
 
 # Export all wandb environment variables
 WANDB_DIR_NAME="wandb_my_dirs"
@@ -35,28 +42,28 @@ kl_loss_coef=0.001
 clip_ratio_low=0.2
 clip_ratio_high=0.28
 
-max_prompt_length=$((1024 * 2))
-max_response_length=$((1204 * 8))
+max_prompt_length=$((1024))
+max_response_length=$((1204 * 2))
 enable_overlong_buffer=True
-overlong_buffer_len=$((1024 * 4))
+overlong_buffer_len=$((1024 * 1))
 overlong_penalty_factor=1.0
 
 loss_agg_mode="token-mean"
 
-train_prompt_bsz=96
-n_resp_per_prompt=8
-train_prompt_mini_bsz=32
+train_prompt_bsz=512
+n_resp_per_prompt=16
+train_prompt_mini_bsz=128
 
 
 # minimum nodes for DeepSeek-V3: 12 nodes
-NNODES=${NNODES:-12}
+NNODES=${NNODES:-2}
 
-RAY_DATA_HOME=${RAY_DATA_HOME:-"${HOME}/verl"}
+RAY_DATA_HOME=${RAY_DATA_HOME:-"${HOME}/myCodeLab/host/downloads"}
 
-MODEL_PATH=$RAY_DATA_HOME/models/DeepSeek-V3-config-verl
+MODEL_PATH=$RAY_DATA_HOME/models/Moonlight-16B-A3B
 
-TRAIN_FILE=$RAY_DATA_HOME/dataset/dapo-math-17k.parquet
-TEST_FILE=$RAY_DATA_HOME/dataset/aime-2024.parquet
+TRAIN_FILE=$RAY_DATA_HOME/datasets/dapo_data/dapo-math-17k.parquet
+TEST_FILE=$RAY_DATA_HOME/datasets/dapo_data/aime-2024.parquet
 
 # Algorithm
 temperature=1.0
@@ -70,20 +77,21 @@ actor_ppo_max_token_len=$(((max_prompt_length + max_response_length) * 10 / 10))
 infer_ppo_max_token_len=$(((max_prompt_length + max_response_length) * 1))
 offload=True
 optim_offload=${OFFLOAD_OPTIM:-True}
-gen_tp=32
-train_tp=${TP:-8}
-train_pp=${PP:-12}
+optimizer_offload_fraction=${OFFLOAD_FRACTION:-1.}
 
+gen_tp=4
+train_tp=${TP:-1}
+train_pp=${PP:-1}
 EP=${EP:-8}
 ETP=1
 CP=1
-optimizer_offload_fraction=${OFFLOAD_FRACTION:-1.}
-LAST_LAYER=${LAST_LAYER:-6}
+LAST_LAYER=${LAST_LAYER:-1}
 
 
-project_name='verl-deepseek-v3'
-exp_name="671B-${NNODES}-pp${train_pp}-tp${train_tp}-ep${EP}-actor-length${actor_ppo_max_token_len}"
-CKPTS_DIR=$RAY_DATA_HOME/ckpt/${project_name}/${exp_name}
+project_name='moonlight'
+exp_name="moonlight-${NNODES}-pp${train_pp}-tp${train_tp}-ep${EP}-actor-length${actor_ppo_max_token_len}"
+CKPTS_DIR=/root/myCodeLab/host/verl/ckpts/${project_name}/${exp_name}
+USE_DIST_CKPT=False
 
 RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     python3 -m verl.trainer.main_ppo \
@@ -96,6 +104,8 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     data.max_prompt_length=${max_prompt_length} \
     data.max_response_length=${max_response_length} \
     data.train_batch_size=${train_prompt_bsz} \
+    data.trust_remote_code=True \
+    actor_rollout_ref.model.trust_remote_code=True \
     actor_rollout_ref.rollout.n=${n_resp_per_prompt} \
     actor_rollout_ref.rollout.name=vllm \
     algorithm.adv_estimator=${adv_estimator} \
@@ -134,6 +144,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     actor_rollout_ref.actor.megatron.expert_model_parallel_size=$EP \
     actor_rollout_ref.actor.megatron.expert_tensor_parallel_size=$ETP \
     actor_rollout_ref.actor.megatron.context_parallel_size=${CP} \
+    actor_rollout_ref.actor.megatron.use_dist_checkpointing=$USE_DIST_CKPT \
     actor_rollout_ref.actor.entropy_coeff=0 \
     actor_rollout_ref.actor.optim.clip_grad=1.0 \
     actor_rollout_ref.actor.loss_agg_mode=${loss_agg_mode} \
@@ -157,6 +168,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     actor_rollout_ref.ref.megatron.expert_tensor_parallel_size=$ETP \
     actor_rollout_ref.ref.megatron.context_parallel_size=${CP} \
     actor_rollout_ref.ref.megatron.param_offload=${offload} \
+    actor_rollout_ref.ref.megatron.use_dist_checkpointing=${USE_DIST_CKPT} \
     +actor_rollout_ref.actor.megatron.override_transformer_config.apply_rope_fusion=False \
     +actor_rollout_ref.actor.megatron.override_transformer_config.moe_router_dtype=fp32 \
     +actor_rollout_ref.actor.megatron.override_transformer_config.moe_shared_expert_overlap=False \
