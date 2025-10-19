@@ -1,0 +1,17 @@
+working_dir: ./
+excludes: ["/.git/"]
+env_vars:
+  RAY_OVERRIDE_JOB_RUNTIME_ENV: "1"
+  WANDB_MODE: "offline"
+  WANDB_DIR: "/tmp/my_wandb_logs"
+  # GLOO_SOCKET_IFNAME: "ibs49"
+  # NCCL_SOCKET_IFNAME: "ibs49"
+  # GLOO_SOCKET_IFNAME: "eth0"
+  # NCCL_SOCKET_IFNAME: "eth0"
+  # Useful debugging flags we've identified.
+  NCCL_DEBUG: "INFO"
+  RAY_DEDUP_LOGS: "0"
+  # Other potentially useful variables from your scripts.
+  HYDRA_FULL_ERROR: "1"
+  CUDA_DEVICE_MAX_CONNECTIONS: "1"
+  VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"

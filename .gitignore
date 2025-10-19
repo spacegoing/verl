@@ -1,4 +1,4 @@
-
+sr*.sh
 **/*.pt
 **/checkpoints
 **/wget-log

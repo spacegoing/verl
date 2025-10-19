@@ -1,0 +1,121 @@
+working_dir: ./
+excludes: ["/.git/"]
+env_vars:
+  RAY_OVERRIDE_JOB_RUNTIME_ENV: "1"
+  WANDB_MODE: "offline"
+  WANDB_DIR_NAME: "wandb_my_dirs"
+  WANDB_ROOT_DIR: "$(pwd)/${WANDB_DIR_NAME}"
+  WANDB_MODE: "offline"
+  WANDB_DIR: "${WANDB_ROOT_DIR}"
+  WANDB_CACHE_DIR: "${WANDB_ROOT_DIR}/.cache"
+  WANDB_CONFIG_DIR: "${WANDB_ROOT_DIR}/.config"
+  WANDB_DATA_DIR: "${WANDB_ROOT_DIR}/wandb_data"
+  # GLOO_SOCKET_IFNAME: "ibs49"
+  # NCCL_SOCKET_IFNAME: "ibs49"
+  # GLOO_SOCKET_IFNAME: "eth0"
+  # NCCL_SOCKET_IFNAME: "eth0"
+  # Useful debugging flags we've identified.
+  NCCL_DEBUG: "INFO"
+  RAY_DEDUP_LOGS: "0"
+  # Other potentially useful variables from your scripts.
+  CUDA_DEVICE_MAX_CONNECTIONS: "1"
+  VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
+  VLLM_ALLREDUCE_USE_SYMM_MEM: "0"
+  HYDRA_FULL_ERROR: "1"
+
+  # Path additions
+  # PATH: "/usr/local/mpi/bin:${PATH}"
+  # GDRCOPY_HOME: "/home/dpsk_a2a/gdrcopy"
+  # LD_LIBRARY_PATH: "/home/dpsk_a2a/gdrcopy/lib:/usr/mpi/gcc/openmpi-4.1.7a1/lib:${LD_LIBRARY_PATH}"
+
+  # DeepEP
+  # NVSHMEM configuration for DeepEP
+  # NVSHMEM_BOOTSTRAP: "IB"
+  # NVSHMEM_BOOTSTRAP_IB_DEV: "SLOT0,SLOT1,SLOT2,SLOT3,SLOT4,SLOT5,SLOT6,SLOT7"
+  # NVSHMEM_HCA_LIST: "SLOT0,SLOT1,SLOT2,SLOT3,SLOT4,SLOT5,SLOT6,SLOT7"
+
+  # # Enable DeepEP for Megatron-LM
+  # MEGATRON_ENABLE_DEEPEP: "1"
+  # NVSHMEM_IB_ENABLE_REMOTE_ATOMICS: "1"
+  # NVSHMEM_IB_ATOMIC_MODE: "FETCH_ADD"
+  # NVSHMEM_ENABLE_ALL_DEVICE_ATOMICS: "1"
+  # NVSHMEM_IB_SL: "0"
+  # NVSHMEM_ENABLE_NIC_PE_MAPPING: "1"
+  # NVSHMEM_DISABLE_CUDA_VMM: "1"
+  # NVSHMEM_USE_GDRCOPY: "1"
+  # NVSHMEM_GDRCOPY_LIMIT_KB: "1024"
+  # NVSHMEM_MEM_ALIGN_SIZE: "128"
+  # NVSHMEM_NUMA_AWARE: "1"
+  # NVSHMEM_IB_GID_INDEX: "0"
+  NVSHMEM_DEBUG: "INFO"
+  NVSHMEM_DEBUG_SUBSYS: "ALL"
+  # NVSHMEM_DIR: "/home/dpsk_a2a/deepep-nvshmem/install"
+
+  # NCCL configuration for optimal IB performance
+  NCCL_DEBUG: "INFO"
+  # NCCL_IB_HCA: "SLOT0:1,SLOT1:1,SLOT2:1,SLOT3:1,SLOT4:1,SLOT5:1,SLOT6:1,SLOT7:1"
+  # NCCL_IB_GID_INDEX: "3"
+  # NCCL_IB_TC: "96"
+  # NCCL_IB_TIMEOUT: "20"
+  # NCCL_NET_GDR_LEVEL: "PXB"
+  # NCCL_IB_ADAPTIVE_ROUTING: "1"
+  # NCCL_IBEXT_DISABLE: "0"
+  # MELLANOX_VISIBLE_DEVICES: "all"
+  # NCCL_IB_QPS_PER_CONNECTION: "2"
+  # NCCL_IB_SL: "0"
+  # NCCL_IB_AR_THRESHOLD: "0"
+  # NCCL_NET_GDR_READ: "1"
+  # NCCL_P2P_DISABLE: "0"
+  # NCCL_P2P_PCI_ENABLE: "1"
+  # NCCL_P2P_NVL_ENABLE: "1"
+  # NCCL_IB_CUDA_SUPPORT: "1"
+  # NCCL_CROSS_NIC: "1"
+  # NCCL_COLLNET_ENABLE: "0"
+  # NCCL_IB_DISABLE: "0"
+  # NCCL_IB_RETRY_CNT: "7"
+  # NCCL_IB_PCI_RELAXED_ORDERING: "1"
+  # NCCL_NVLS_ENABLE: "1"
+
+  # # UCX configuration for RDMA
+  # UCX_TLS: "ib,cuda_copy,cuda_ipc"
+  # UCX_NET_DEVICES: "mlx5_0:1,mlx5_1:1"
+  # UCX_IB_REG_METHODS: "rcache,odp"
+  # UCX_IB_RCACHE_MEM_PRIO: "1000"
+  # UCX_RCACHE_PURGE_ON_FORK: "n"
+  # UCX_MEMTYPE_CACHE: "n"
+  # UCX_IB_GPU_DIRECT_RDMA: "yes"
+  # UCX_CUDA_IPC_ENABLE: "yes"
+  # UCX_RNDV_THRESH: "16384"
+  # UCX_RNDV_FRAG_MEM_TYPE: "cuda"
+  # UCX_IB_RX_INLINE_RESP: "0"
+  # UCX_USE_MT_MUTEX: "y"
+  # UCX_IB_MLX5_DEVX: "y"
+  # UCX_IB_REG_RETRY_COUNT: "20"
+  # UCX_WARN_UNUSED_ENV_VARS: "n"
+
+  # # CUDA configuration
+  # CUDA_LAUNCH_BLOCKING: "0"
+  # CUDA_MODULE_LOADING: "LAZY"
+  # CUDA_DEVICE_ORDER: "PCI_BUS_ID"
+
+  # # PyTorch configuration
+  # TORCH_NCCL_ASYNC_ERROR_HANDLING: "1"
+  # TORCH_CUDA_ARCH_LIST: "8.0;9.0"
+  # TORCH_NCCL_HIGH_PRIORITY: "1"
+  # TORCH_NCCL_BLOCKING_WAIT: "0"
+  # TORCH_DISTRIBUTED_DEBUG: "INFO"
+
+  # # OpenMPI configuration
+  # OMPI_MCA_btl: "^openib"
+  # OMPI_MCA_pml: "ucx"
+  # OMPI_MCA_osc: "ucx"
+  # OMPI_MCA_coll_hcoll_enable: "0"
+  # OMPI_MCA_btl_tcp_if_include: "eth0"
+  # OMPI_MCA_rmaps_base_mapping_policy: "slot"
+  # OMPI_MCA_hwloc_base_binding_policy: "none"
+
+  # # IB Verbs configuration
+  # IBV_FORK_SAFE: "1"
+  # RDMAV_FORK_SAFE: "1"
+  # RDMAV_HUGEPAGES_SAFE: "1"
+
