@@ -30,6 +30,9 @@ export WANDB_DIR="${WANDB_ROOT_DIR}"
 export WANDB_CACHE_DIR="${WANDB_ROOT_DIR}/.cache"
 export WANDB_CONFIG_DIR="${WANDB_ROOT_DIR}/.config"
 export WANDB_DATA_DIR="${WANDB_ROOT_DIR}/wandb_data"
+# export NVTE_DEBUG=1
+# export NVTE_DEBUG_LEVEL=2
+# export NVTE_FUSED_ATTN=1
 
 adv_estimator=grpo
 
@@ -168,6 +171,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     actor_rollout_ref.ref.megatron.context_parallel_size=${CP} \
     actor_rollout_ref.ref.megatron.param_offload=${offload} \
     actor_rollout_ref.ref.megatron.use_dist_checkpointing=${USE_DIST_CKPT} \
+    actor_rollout_ref.actor.megatron.override_transformer_config.attention_backend=fused \
     +actor_rollout_ref.actor.megatron.override_transformer_config.apply_rope_fusion=False \
     +actor_rollout_ref.actor.megatron.override_transformer_config.moe_router_dtype=fp32 \
     +actor_rollout_ref.actor.megatron.override_transformer_config.moe_shared_expert_overlap=False \

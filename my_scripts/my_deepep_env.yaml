@@ -17,6 +17,12 @@ env_vars:
   # NCCL_DEBUG: "INFO"
   # RAY_DEDUP_LOGS: "0"
   # Other potentially useful variables from your scripts.
+
+  # # for dsv3, MLA only use fused attn
+  # NVTE_DEBUG: "1"
+  # NVTE_DEBUG_LEVEL: "2"
+  # NVTE_FUSED_ATTN: "1"
+
   CUDA_DEVICE_MAX_CONNECTIONS: "1"
   VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
   VLLM_ALLREDUCE_USE_SYMM_MEM: "0"
