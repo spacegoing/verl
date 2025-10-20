@@ -24,9 +24,8 @@ RUNTIME_ENV=${RUNTIME_ENV:-"${HOME}/myCodeLab/host/verl/my_scripts/my_deepep_env
 
 # Export all wandb environment variables
 WANDB_DIR_NAME="wandb_my_dirs"
-WANDB_ROOT_DIR="$(pwd)/${WANDB_DIR_NAME}"
+WANDB_ROOT_DIR="/root/myCodeLab/host/verl/${WANDB_DIR_NAME}"
 mkdir -p "${WANDB_ROOT_DIR}"
-export WANDB_MODE="offline"
 export WANDB_DIR="${WANDB_ROOT_DIR}"
 export WANDB_CACHE_DIR="${WANDB_ROOT_DIR}/.cache"
 export WANDB_CONFIG_DIR="${WANDB_ROOT_DIR}/.config"

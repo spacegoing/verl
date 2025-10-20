@@ -2,21 +2,20 @@ working_dir: ./
 excludes: ["/.git/"]
 env_vars:
   RAY_OVERRIDE_JOB_RUNTIME_ENV: "1"
-  WANDB_MODE: "offline"
-  WANDB_DIR_NAME: "wandb_my_dirs"
-  WANDB_ROOT_DIR: "$(pwd)/${WANDB_DIR_NAME}"
-  WANDB_MODE: "offline"
-  WANDB_DIR: "${WANDB_ROOT_DIR}"
-  WANDB_CACHE_DIR: "${WANDB_ROOT_DIR}/.cache"
-  WANDB_CONFIG_DIR: "${WANDB_ROOT_DIR}/.config"
-  WANDB_DATA_DIR: "${WANDB_ROOT_DIR}/wandb_data"
+  # WANDB_MODE: "offline"
+  # WANDB_DIR_NAME: "wandb_my_dirs"
+  # WANDB_ROOT_DIR: "/root/myCodeLab/host/verl/${WANDB_DIR_NAME}"
+  # WANDB_DIR: "${WANDB_ROOT_DIR}"
+  # WANDB_CACHE_DIR: "${WANDB_ROOT_DIR}/.cache"
+  # WANDB_CONFIG_DIR: "${WANDB_ROOT_DIR}/.config"
+  # WANDB_DATA_DIR: "${WANDB_ROOT_DIR}/wandb_data"
   # GLOO_SOCKET_IFNAME: "ibs49"
   # NCCL_SOCKET_IFNAME: "ibs49"
   # GLOO_SOCKET_IFNAME: "eth0"
   # NCCL_SOCKET_IFNAME: "eth0"
   # Useful debugging flags we've identified.
-  NCCL_DEBUG: "INFO"
-  RAY_DEDUP_LOGS: "0"
+  # NCCL_DEBUG: "INFO"
+  # RAY_DEDUP_LOGS: "0"
   # Other potentially useful variables from your scripts.
   CUDA_DEVICE_MAX_CONNECTIONS: "1"
   VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
@@ -52,7 +51,6 @@ env_vars:
   # NVSHMEM_DIR: "/home/dpsk_a2a/deepep-nvshmem/install"
 
   # NCCL configuration for optimal IB performance
-  NCCL_DEBUG: "INFO"
   # NCCL_IB_HCA: "SLOT0:1,SLOT1:1,SLOT2:1,SLOT3:1,SLOT4:1,SLOT5:1,SLOT6:1,SLOT7:1"
   # NCCL_IB_GID_INDEX: "3"
   # NCCL_IB_TC: "96"
