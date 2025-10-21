@@ -1,1 +1,1 @@
-/root/myCodeLab/host/verl/my_scripts/run_q257b.sh
+/root/myCodeLab/host/verl/my_scripts/run_megatron_64node_h200.sh

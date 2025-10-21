@@ -2,7 +2,7 @@ working_dir: ./
 excludes: ["/.git/"]
 env_vars:
   RAY_OVERRIDE_JOB_RUNTIME_ENV: "1"
-  # WANDB_MODE: "offline"
+  WANDB_MODE: "offline"
   # WANDB_DIR_NAME: "wandb_my_dirs"
   # WANDB_ROOT_DIR: "/root/myCodeLab/host/verl/${WANDB_DIR_NAME}"
   # WANDB_DIR: "${WANDB_ROOT_DIR}"
@@ -17,11 +17,6 @@ env_vars:
   # NCCL_DEBUG: "INFO"
   # RAY_DEDUP_LOGS: "0"
   # Other potentially useful variables from your scripts.
-
-  # # for dsv3, MLA only use fused attn
-  # NVTE_DEBUG: "1"
-  # NVTE_DEBUG_LEVEL: "2"
-  # NVTE_FUSED_ATTN: "1"
 
   CUDA_DEVICE_MAX_CONNECTIONS: "1"
   VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
@@ -38,8 +33,21 @@ env_vars:
   # NVSHMEM_BOOTSTRAP: "IB"
   # NVSHMEM_BOOTSTRAP_IB_DEV: "SLOT0,SLOT1,SLOT2,SLOT3,SLOT4,SLOT5,SLOT6,SLOT7"
   # NVSHMEM_HCA_LIST: "SLOT0,SLOT1,SLOT2,SLOT3,SLOT4,SLOT5,SLOT6,SLOT7"
+  NVSHMEM_IBGDA_NIC_HANDLER: "gpu"
+  NVSHMEM_IB_TRAFFIC_CLASS: "138"
+
+  # # for dsv3, MLA only use fused attn
+  # NVTE_DEBUG: "1"
+  # NVTE_DEBUG_LEVEL: "2"
+  # NVTE_FUSED_ATTN: "1"
+  NVTE_ALLOW_NONDETERMINISTIC_ALGO: "1"
+  NVTE_FUSED_ATTN: "1"
+  NVTE_NORM_FWD_USE_CUDNN: "1"
+  NVTE_NORM_BWD_USE_CUDNN: "1"
+  NVTE_EXT_MARGIN_SM: "20"
 
   # # Enable DeepEP for Megatron-LM
+  NVSHMEM_IB_ENABLE_IBGDA: "1"
   # MEGATRON_ENABLE_DEEPEP: "1"
   # NVSHMEM_IB_ENABLE_REMOTE_ATOMICS: "1"
   # NVSHMEM_IB_ATOMIC_MODE: "FETCH_ADD"
@@ -52,11 +60,22 @@ env_vars:
   # NVSHMEM_MEM_ALIGN_SIZE: "128"
   # NVSHMEM_NUMA_AWARE: "1"
   # NVSHMEM_IB_GID_INDEX: "0"
-  NVSHMEM_DEBUG: "INFO"
-  NVSHMEM_DEBUG_SUBSYS: "ALL"
+  # NVSHMEM_DEBUG: "INFO"
+  # NVSHMEM_DEBUG_SUBSYS: "ALL"
   # NVSHMEM_DIR: "/home/dpsk_a2a/deepep-nvshmem/install"
 
   # NCCL configuration for optimal IB performance
+  NCCL_IB_GID_INDEX: "5"
+  NCCL_IB_TC: "138"
+  NCCL_IB_QPS_PER_CONNECTION: "8"
+  NCCL_IB_QPS_CONNECTION: "8"
+  NCCL_IB_GID_INDEX: "5 "
+  NCCL_IB_TC: "138"
+  NCCL_NVLS_ENABLE: "0 "
+  NCCL_RUNTIME_CONNECT: "0 "
+  # nccl性能
+  OMPI_MCA_btl_tcp_if_include: "eth0"
+  NCCL_MIN_NCHANNELS: "32"
   # NCCL_IB_HCA: "SLOT0:1,SLOT1:1,SLOT2:1,SLOT3:1,SLOT4:1,SLOT5:1,SLOT6:1,SLOT7:1"
   # NCCL_IB_GID_INDEX: "3"
   # NCCL_IB_TC: "96"
