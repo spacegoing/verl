@@ -30,9 +30,6 @@ export WANDB_DIR="${WANDB_ROOT_DIR}"
 export WANDB_CACHE_DIR="${WANDB_ROOT_DIR}/.cache"
 export WANDB_CONFIG_DIR="${WANDB_ROOT_DIR}/.config"
 export WANDB_DATA_DIR="${WANDB_ROOT_DIR}/wandb_data"
-# export NVTE_DEBUG=1
-# export NVTE_DEBUG_LEVEL=2
-# export NVTE_FUSED_ATTN=1
 
 adv_estimator=grpo
 
@@ -45,7 +42,7 @@ clip_ratio_low=0.2
 clip_ratio_high=0.28
 
 max_prompt_length=$((1024))
-max_response_length=$((1204 * 2))
+max_response_length=$((1024 * 2))
 enable_overlong_buffer=True
 overlong_buffer_len=$((1024 * 1))
 overlong_penalty_factor=1.0

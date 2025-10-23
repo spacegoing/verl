@@ -15,7 +15,14 @@ env_vars:
   # NCCL_SOCKET_IFNAME: "eth0"
   # Useful debugging flags we've identified.
   # NCCL_DEBUG: "INFO"
+  # TORCH_NCCL_ASYNC_ERROR_HANDLING: "1"
+  # TORCH_NCCL_BLOCKING_WAIT: "0"
+  # TORCH_DISTRIBUTED_DEBUG: "INFO"
+  # CUDA_LAUNCH_BLOCKING: "1"
+  # NVTE_DEBUG: "1"
+  # NVTE_DEBUG_LEVEL: "2"
   # RAY_DEDUP_LOGS: "0"
+  # TORCH_LOGS: "recompiles,dynamo,autograd"
   # Other potentially useful variables from your scripts.
 
   CUDA_DEVICE_MAX_CONNECTIONS: "1"
@@ -37,9 +44,6 @@ env_vars:
   NVSHMEM_IB_TRAFFIC_CLASS: "138"
 
   # # for dsv3, MLA only use fused attn
-  # NVTE_DEBUG: "1"
-  # NVTE_DEBUG_LEVEL: "2"
-  # NVTE_FUSED_ATTN: "1"
   NVTE_ALLOW_NONDETERMINISTIC_ALGO: "1"
   NVTE_FUSED_ATTN: "1"
   NVTE_NORM_FWD_USE_CUDNN: "1"
@@ -69,10 +73,8 @@ env_vars:
   NCCL_IB_TC: "138"
   NCCL_IB_QPS_PER_CONNECTION: "8"
   NCCL_IB_QPS_CONNECTION: "8"
-  NCCL_IB_GID_INDEX: "5 "
-  NCCL_IB_TC: "138"
-  NCCL_NVLS_ENABLE: "0 "
-  NCCL_RUNTIME_CONNECT: "0 "
+  NCCL_NVLS_ENABLE: "0"
+  NCCL_RUNTIME_CONNECT: "0"
   # nccl性能
   OMPI_MCA_btl_tcp_if_include: "eth0"
   NCCL_MIN_NCHANNELS: "32"
@@ -117,16 +119,12 @@ env_vars:
   # UCX_WARN_UNUSED_ENV_VARS: "n"
 
   # # CUDA configuration
-  # CUDA_LAUNCH_BLOCKING: "0"
   # CUDA_MODULE_LOADING: "LAZY"
   # CUDA_DEVICE_ORDER: "PCI_BUS_ID"
 
   # # PyTorch configuration
-  # TORCH_NCCL_ASYNC_ERROR_HANDLING: "1"
   # TORCH_CUDA_ARCH_LIST: "8.0;9.0"
   # TORCH_NCCL_HIGH_PRIORITY: "1"
-  # TORCH_NCCL_BLOCKING_WAIT: "0"
-  # TORCH_DISTRIBUTED_DEBUG: "INFO"
 
   # # OpenMPI configuration
   # OMPI_MCA_btl: "^openib"

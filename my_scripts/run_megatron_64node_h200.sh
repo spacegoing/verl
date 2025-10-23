@@ -45,16 +45,16 @@ clip_ratio_low=0.2
 clip_ratio_high=0.28
 
 max_prompt_length=$((1024 * 2))
-max_response_length=$((1204 * 8))
+max_response_length=$((1024 * 8))
 enable_overlong_buffer=True
 overlong_buffer_len=$((1024 * 4))
 overlong_penalty_factor=1.0
 
 loss_agg_mode="token-mean"
 
-train_prompt_bsz=96
+train_prompt_bsz=256
 n_resp_per_prompt=8
-train_prompt_mini_bsz=32
+train_prompt_mini_bsz=128
 
 # minimum nodes for DeepSeek-V3: 12 nodes
 NNODES=${NNODES:-64}
@@ -92,6 +92,12 @@ project_name='750B'
 exp_name="${project_name}-${NNODES}-pp${train_pp}-tp${train_tp}-ep${EP}-actor-length${actor_ppo_max_token_len}"
 CKPTS_DIR=/root/myCodeLab/host/verl/ckpts/${project_name}/${exp_name}
 USE_DIST_CKPT=False
+
+# Nsight profiling configuration
+PROFILE_STEPS="[1,2,5,9,10,49]" # or [] or null
+PROFILE_RANKS_ALL=False # or True
+PROFILE_RANKS=[0,4]
+DISCRETE=True  # or True
 
 RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     python3 -m verl.trainer.main_ppo \
@@ -201,3 +207,11 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     trainer.default_local_dir="${CKPTS_DIR}" \
     trainer.resume_mode=auto \
     trainer.log_val_generations=10
+    # trainer.log_val_generations=10 \
+    # actor_rollout_ref.actor.profiler.enable=True \
+    # actor_rollout_ref.actor.profiler.ranks=$PROFILE_RANKS \
+    # actor_rollout_ref.actor.profiler.all_ranks=$PROFILE_RANKS_ALL \
+    # global_profiler.tool=nsys \
+    # global_profiler.steps=$PROFILE_STEPS \
+    # global_profiler.profile_continuous_steps=True \
+    # global_profiler.global_tool_config.nsys.discrete=$DISCRETE $@
