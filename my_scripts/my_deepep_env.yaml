@@ -2,7 +2,11 @@ working_dir: ./
 excludes: ["/.git/"]
 env_vars:
   RAY_OVERRIDE_JOB_RUNTIME_ENV: "1"
-  WANDB_MODE: "offline"
+  http_proxy: "http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+  https_proxy: "http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+  HTTP_PROXY: "http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+  HTTPS_PROXY: "http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+  # WANDB_MODE: "offline"
   # WANDB_DIR_NAME: "wandb_my_dirs"
   # WANDB_ROOT_DIR: "/root/myCodeLab/host/verl/${WANDB_DIR_NAME}"
   # WANDB_DIR: "${WANDB_ROOT_DIR}"

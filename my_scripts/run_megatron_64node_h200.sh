@@ -77,16 +77,15 @@ use_dynamic_bsz=True
 actor_ppo_max_token_len=$(((max_prompt_length + max_response_length) * 10 / 10))
 infer_ppo_max_token_len=$(((max_prompt_length + max_response_length) * 1))
 offload=True
-optim_offload=${OFFLOAD_OPTIM:-True}
+optim_offload=False
 optimizer_offload_fraction=${OFFLOAD_FRACTION:-0.}
 
-gen_tp=32
-train_tp=${TP:-1}
-train_pp=${PP:-16}
-EP=${EP:-32}
+gen_tp=16
+train_tp=${TP:-2}
+train_pp=${PP:-8}
+EP=${EP:-8}
 ETP=1
 CP=1
-LAST_LAYER=${LAST_LAYER:-1}
 
 project_name='750B'
 exp_name="${project_name}-${NNODES}-pp${train_pp}-tp${train_tp}-ep${EP}-actor-length${actor_ppo_max_token_len}"
@@ -154,7 +153,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     actor_rollout_ref.actor.entropy_coeff=0 \
     actor_rollout_ref.actor.optim.clip_grad=1.0 \
     actor_rollout_ref.actor.loss_agg_mode=${loss_agg_mode} \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.6 \
+    actor_rollout_ref.rollout.gpu_memory_utilization=0.8 \
     actor_rollout_ref.rollout.tensor_model_parallel_size=${gen_tp} \
     actor_rollout_ref.rollout.enable_chunked_prefill=True \
     actor_rollout_ref.rollout.max_num_batched_tokens=$((max_prompt_length + max_response_length)) \
@@ -176,19 +175,17 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     actor_rollout_ref.ref.megatron.param_offload=${offload} \
     actor_rollout_ref.ref.megatron.use_dist_checkpointing=${USE_DIST_CKPT} \
     actor_rollout_ref.actor.megatron.override_transformer_config.attention_backend=fused \
+    actor_rollout_ref.actor.megatron.override_transformer_config.recompute_granularity="selective" \
+    actor_rollout_ref.actor.megatron.override_transformer_config.recompute_modules=["layernorm","moe"] \
     +actor_rollout_ref.actor.megatron.override_transformer_config.apply_rope_fusion=False \
     +actor_rollout_ref.actor.megatron.override_transformer_config.moe_router_dtype=fp32 \
     +actor_rollout_ref.actor.megatron.override_transformer_config.moe_shared_expert_overlap=False \
     +actor_rollout_ref.actor.megatron.override_transformer_config.moe_enable_deepep=True \
     +actor_rollout_ref.actor.megatron.override_transformer_config.moe_token_dispatcher_type=flex \
-    +actor_rollout_ref.actor.megatron.override_transformer_config.recompute_method=uniform \
-    +actor_rollout_ref.actor.megatron.override_transformer_config.recompute_granularity=full \
-    +actor_rollout_ref.actor.megatron.override_transformer_config.recompute_num_layers=1 \
     +actor_rollout_ref.actor.megatron.override_transformer_config.gradient_accumulation_fusion=True \
     +actor_rollout_ref.actor.megatron.override_transformer_config.moe_permute_fusion=True \
     +actor_rollout_ref.actor.megatron.override_transformer_config.account_for_embedding_in_pipeline_split=False \
     +actor_rollout_ref.actor.megatron.override_transformer_config.account_for_loss_in_pipeline_split=False \
-    +actor_rollout_ref.actor.megatron.override_transformer_config.num_layers_in_last_pipeline_stage=${LAST_LAYER} \
     reward_model.reward_manager=dapo \
     +reward_model.reward_kwargs.overlong_buffer_cfg.enable=${enable_overlong_buffer} \
     +reward_model.reward_kwargs.overlong_buffer_cfg.len=${overlong_buffer_len} \
@@ -215,3 +212,8 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     # global_profiler.steps=$PROFILE_STEPS \
     # global_profiler.profile_continuous_steps=True \
     # global_profiler.global_tool_config.nsys.discrete=$DISCRETE $@
+
+# trainer.log_val_generations=10
+# +actor_rollout_ref.actor.megatron.override_transformer_config.recompute_method=uniform \
+# +actor_rollout_ref.actor.megatron.override_transformer_config.recompute_num_layers=1 \
+# +actor_rollout_ref.actor.megatron.override_transformer_config.recompute_granularity=full \
