@@ -68,7 +68,7 @@ override_transformer_config:
 
   # Attention backend to use (flash,fused,unfused,local,auto). Defaults to auto in mcore, flash in verl
   attention_backend: flash
-  pipeline_model_parallel_layout: 'Et|(tt|)*30L'
+  # pipeline_model_parallel_layout: 'Et|(tt|)*30L'
 
 override_mcore_model_config: {}
 
