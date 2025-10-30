@@ -1,3 +1,5 @@
+ckpts
+
 sr*.sh
 **/*.pt
 **/checkpoints

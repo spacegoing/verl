@@ -78,7 +78,7 @@ offload=True
 optim_offload=${OFFLOAD_OPTIM:-True}
 optimizer_offload_fraction=${OFFLOAD_FRACTION:-1.}
 
-gen_tp=4
+gen_tp=1
 train_tp=${TP:-1}
 train_pp=${PP:-1}
 EP=${EP:-8}
@@ -91,6 +91,12 @@ project_name='moonlight'
 exp_name="moonlight-${NNODES}-pp${train_pp}-tp${train_tp}-ep${EP}-actor-length${actor_ppo_max_token_len}"
 CKPTS_DIR=/root/myCodeLab/host/verl/ckpts/${project_name}/${exp_name}
 USE_DIST_CKPT=False
+
+# Nsight profiling configuration
+PROFILE_STEPS="[1,2,5,9,10,49]" # or [] or null
+PROFILE_RANKS_ALL=True # or True
+PROFILE_RANKS=[0,4]
+DISCRETE=True  # or True
 
 RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     python3 -m verl.trainer.main_ppo \
@@ -200,3 +206,12 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     trainer.default_local_dir="${CKPTS_DIR}" \
     trainer.resume_mode=auto \
     trainer.log_val_generations=10
+    # trainer.log_val_generations=10 \
+    # global_profiler.tool=nsys \
+    # global_profiler.steps=$PROFILE_STEPS \
+    # global_profiler.profile_continuous_steps=True \
+    # global_profiler.global_tool_config.nsys.discrete=$DISCRETE \
+    # actor_rollout_ref.actor.profiler.enable=True \
+    # actor_rollout_ref.actor.profiler.all_ranks=$PROFILE_RANKS_ALL $@
+
+# actor_rollout_ref.actor.profiler.ranks=$PROFILE_RANKS \
