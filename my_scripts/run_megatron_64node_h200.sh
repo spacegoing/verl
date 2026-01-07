@@ -44,16 +44,16 @@ kl_loss_coef=0.001
 clip_ratio_low=0.2
 clip_ratio_high=0.28
 
-max_prompt_length=$((1024 * 2))
-max_response_length=$((1024 * 8))
+max_prompt_length=$((1024 * 4))
+max_response_length=$((1024 * 28))
 enable_overlong_buffer=True
 overlong_buffer_len=$((1024 * 4))
-overlong_penalty_factor=1.0
+overlong_penalty_factor=0.8
 
 loss_agg_mode="token-mean"
 
 train_prompt_bsz=256
-n_resp_per_prompt=8
+n_resp_per_prompt=16
 train_prompt_mini_bsz=128
 
 # minimum nodes for DeepSeek-V3: 12 nodes
@@ -61,7 +61,7 @@ NNODES=${NNODES:-64}
 
 RAY_DATA_HOME=${RAY_DATA_HOME:-"${HOME}/myCodeLab/host/downloads"}
 
-MODEL_PATH=/public/zhangyuqi60/hf_outputs/task-v3/cal-dpo
+MODEL_PATH=/public/lichang93/stCodeLab/downloads/models/750B_Math84
 
 TRAIN_FILE=$RAY_DATA_HOME/datasets/dapo_data/dapo-math-17k.parquet
 TEST_FILE=$RAY_DATA_HOME/datasets/dapo_data/aime-2024.parquet
@@ -175,8 +175,9 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     actor_rollout_ref.ref.megatron.param_offload=${offload} \
     actor_rollout_ref.ref.megatron.use_dist_checkpointing=${USE_DIST_CKPT} \
     actor_rollout_ref.actor.megatron.override_transformer_config.attention_backend=fused \
-    actor_rollout_ref.actor.megatron.override_transformer_config.recompute_granularity="selective" \
-    actor_rollout_ref.actor.megatron.override_transformer_config.recompute_modules=["layernorm","moe"] \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.recompute_method=uniform \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.recompute_granularity=full \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.recompute_num_layers=1 \
     +actor_rollout_ref.actor.megatron.override_transformer_config.apply_rope_fusion=False \
     +actor_rollout_ref.actor.megatron.override_transformer_config.moe_router_dtype=fp32 \
     +actor_rollout_ref.actor.megatron.override_transformer_config.moe_shared_expert_overlap=False \
