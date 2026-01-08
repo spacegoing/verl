@@ -31,6 +31,9 @@ from verl.utils.config import validate_config
 from verl.utils.device import is_cuda_available
 from verl.utils.import_utils import load_extern_type
 
+import numpy as np
+import torch
+
 
 @hydra.main(config_path="config", config_name="ppo_trainer", version_base=None)
 def main(config):
@@ -362,6 +365,20 @@ def create_rl_dataset(data_paths, data_config, tokenizer, processor, is_train=Tr
         processor=processor,
         config=data_config,
     )
+
+    rng = np.random.default_rng(seed=42)
+    target_samples = int(len(dataset) * 0.1)
+
+    def random_subsample(dataset, n_samples, name="Dataset"):
+        if len(dataset) > n_samples:
+            # Generate random indices
+            indices = rng.choice(int(len(dataset)), size=n_samples, replace=False)
+            # Create a Subset
+            dataset = torch.utils.data.Subset(dataset, indices)
+            print(f">>> [User Mod] Randomly subsampled {name} to {len(dataset)} samples.")
+        return dataset
+
+    random_subsample(dataset, target_samples, "Train" if is_train else "Eval")
 
     return dataset
 

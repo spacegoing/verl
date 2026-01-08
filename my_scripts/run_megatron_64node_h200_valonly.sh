@@ -38,7 +38,7 @@ adv_estimator=grpo
 
 use_kl_in_reward=False
 kl_coef=0.0
-use_kl_loss=True
+use_kl_loss=False
 kl_loss_coef=0.001
 
 clip_ratio_low=0.2
@@ -97,6 +97,10 @@ PROFILE_STEPS="[1,2,5,9,10,49]" # or [] or null
 PROFILE_RANKS_ALL=False # or True
 PROFILE_RANKS=[0,4]
 DISCRETE=True  # or True
+
+# Define a local path for validation results
+# This ensures you have the data even if W&B fails to sync
+VAL_RESULTS_DIR="${WANDB_ROOT_DIR}/val_results/${TIMESTAMP}"
 
 RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     python3 -m verl.trainer.main_ppo \
@@ -201,6 +205,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     trainer.nnodes="${NNODES}" \
     trainer.val_before_train=True \
     +trainer.val_only=True \
+    +trainer.validation_data_dir="${VAL_RESULTS_DIR}" \
     trainer.test_freq=10 \
     trainer.save_freq=100 \
     trainer.total_epochs=10 \
