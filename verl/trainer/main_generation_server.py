@@ -35,6 +35,7 @@ from openai.types.chat import ChatCompletion
 
 from verl.utils.hdfs_io import makedirs
 from verl.workers.rollout.replica import get_rollout_replica_class
+from verl.trainer.ppo.reward import get_custom_reward_fn
 
 
 async def start_server(config):
@@ -135,7 +136,7 @@ def main(config):
     sampling_params = {
         "temperature": config.actor_rollout_ref.rollout.temperature,
         "top_p": config.actor_rollout_ref.rollout.top_p,
-        # "top_k": config.actor_rollout_ref.rollout.top_k,
+        "top_k": config.actor_rollout_ref.rollout.top_k,
         "max_tokens": config.actor_rollout_ref.rollout.response_length,
     }
 
@@ -158,36 +159,56 @@ def main(config):
     chat_lst = [chat.tolist() for chat in chat_lst]
     chat_numpy = np.array(chat_lst)
 
-    # start native server
+    # 3. Start Distributed Inference
+    print("Initializing servers...")
     server_handles, server_addresses = asyncio.run(start_server(config))
 
-    # run generate
+    print(f"Generating responses for {len(chat_lst)} prompts...")
     gen_results = asyncio.run(
         generate(server_addresses, config.actor_rollout_ref.model.path, n_samples, sampling_params, chat_numpy)
     )
 
-    # reshape results into a numpy array
     import itertools
-
     results = list(itertools.chain.from_iterable(gen_results))
-
-    # extract content from results
     results = np.array([result.choices[0].message.content for result in results])
-    results = np.reshape(results, (-1, n_samples))
+    results = np.reshape(results, (-1, n_samples)).tolist()
 
-    assert results.shape == (len(chat_lst), n_samples)
-
-    results = results.tolist()
-
-    # add to the data frame
+    # 4. Evaluation Logic (Acc@1)
+    print(">>> Starting Evaluation...")
     dataset["responses"] = results
 
-    # write to a new parquet
     output_dir = os.path.dirname(config.data.output_path)
     makedirs(output_dir, exist_ok=True)
-    print(f"Saving results to {config.data.output_path}")
+    print(f"Saving detailed results to {config.data.output_path}")
     dataset.to_parquet(config.data.output_path)
 
+    # Initialize Reward Function
+    reward_fn = get_custom_reward_fn(config)
+    
+    data_records = dataset.to_dict("records")
+    all_scores = []
+    
+    # Compute scores locally (fast enough compared to generation)
+    for i, record in enumerate(data_records):
+        # Calculate score for each sample
+        # reward_fn usually expects (data_source, response) or (data_source, response, ground_truth)
+        # We pass the full record which contains ground truth
+        scores = [reward_fn(record, r) for r in results[i]]
+        all_scores.append(np.mean(scores))
+
+    mean_acc = np.mean(all_scores)
+    
+    print("=" * 40)
+    print(f"Total Samples: {len(all_scores)}")
+    print(f"Accuracy @ {n_samples}: {mean_acc:.4f}")
+    print("=" * 40)
+
+    # 5. Save Results
+    output_dir = os.path.dirname(config.data.output_path)
+    makedirs(output_dir, exist_ok=True)
+    dataset["acc"] = all_scores
+    print(f"Saving detailed results to {config.data.output_path}")
+    dataset.to_parquet(config.data.output_path)
 
 if __name__ == "__main__":
     main()

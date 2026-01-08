@@ -67,10 +67,10 @@ TRAIN_FILE=$RAY_DATA_HOME/datasets/dapo_data/dapo-math-17k.parquet
 TEST_FILE=$RAY_DATA_HOME/datasets/dapo_data/aime-2024.parquet
 
 # Algorithm
-temperature=1.0
-top_p=1.0
+temperature=0.6
+top_p=0.8
 top_k=-1 # 0 for HF rollout, -1 for vLLM rollout
-val_top_p=0.7
+val_top_p=0.8
 
 # Performance Related Parameter
 use_dynamic_bsz=True
@@ -81,9 +81,9 @@ optim_offload=False
 optimizer_offload_fraction=${OFFLOAD_FRACTION:-0.}
 
 gen_tp=16
-train_tp=${TP:-2}
-train_pp=${PP:-8}
-EP=${EP:-8}
+train_tp=${TP:-1}
+train_pp=${PP:-16}
+EP=${EP:-32}
 ETP=1
 CP=1
 
@@ -204,6 +204,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     trainer.total_epochs=10 \
     trainer.default_local_dir="${CKPTS_DIR}" \
     trainer.resume_mode=auto \
+    trainer.val_before_train=True \
     trainer.log_val_generations=10
     # trainer.log_val_generations=10 \
     # actor_rollout_ref.actor.profiler.enable=True \

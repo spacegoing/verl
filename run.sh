@@ -1,0 +1,1 @@
+/public/lichang93/stCodeLab/verl/my_scripts/run_megatron_64node_h200.sh
