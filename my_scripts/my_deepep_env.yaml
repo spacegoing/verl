@@ -2,7 +2,11 @@ working_dir: ./
 excludes: ["/.git/"]
 env_vars:
   RAY_OVERRIDE_JOB_RUNTIME_ENV: "1"
-  WANDB_MODE: "offline"
+  http_proxy: "http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+  https_proxy: "http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+  HTTP_PROXY: "http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+  HTTPS_PROXY: "http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+  # WANDB_MODE: "offline"
   # WANDB_DIR_NAME: "wandb_my_dirs"
   # WANDB_ROOT_DIR: "/root/myCodeLab/host/verl/${WANDB_DIR_NAME}"
   # WANDB_DIR: "${WANDB_ROOT_DIR}"
@@ -15,7 +19,7 @@ env_vars:
   # NCCL_SOCKET_IFNAME: "eth0"
   # Useful debugging flags we've identified.
   # NCCL_DEBUG: "INFO"
-  # TORCH_NCCL_ASYNC_ERROR_HANDLING: "1"
+  TORCH_NCCL_ASYNC_ERROR_HANDLING: "1"
   # TORCH_NCCL_BLOCKING_WAIT: "0"
   # TORCH_DISTRIBUTED_DEBUG: "INFO"
   # CUDA_LAUNCH_BLOCKING: "1"
@@ -29,6 +33,8 @@ env_vars:
   VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
   VLLM_ALLREDUCE_USE_SYMM_MEM: "0"
   HYDRA_FULL_ERROR: "1"
+  # VLLM_ATTENTION_BACKEND: "FLASHINFER_MLA"
+  # VLLM_ATTENTION_BACKEND: "FLEX_ATTENTION"
 
   # Path additions
   # PATH: "/usr/local/mpi/bin:${PATH}"
@@ -99,7 +105,6 @@ env_vars:
   # NCCL_IB_DISABLE: "0"
   # NCCL_IB_RETRY_CNT: "7"
   # NCCL_IB_PCI_RELAXED_ORDERING: "1"
-  # NCCL_NVLS_ENABLE: "1"
 
   # # UCX configuration for RDMA
   # UCX_TLS: "ib,cuda_copy,cuda_ipc"
