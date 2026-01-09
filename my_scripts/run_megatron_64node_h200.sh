@@ -11,6 +11,16 @@ set -xeuo pipefail
 # pip3 install git+https://github.com/ISEEKYAN/mbridge
 # 3. remove the `quantization_config` in the DeepSeek-V3's `config.json` and 
 # set `num_nextn_predict_layers=0` to disable MTP, which is not currently supported
+export http_proxy="http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+export https_proxy="http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+export HTTP_PROXY="http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+export HTTPS_PROXY="http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+export no_proxy="localhost,127.0.0.1"
+export NO_PROXY="localhost,127.0.0.1"
+
+export NCCL_NVLS_ENABLE="0"
+export NCCL_DEBUG=INFO
+export TORCH_NCCL_ASYNC_ERROR_HANDLING=1
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOGFILE="logs/run_${TIMESTAMP}.log"
@@ -52,12 +62,14 @@ overlong_penalty_factor=0.8
 
 loss_agg_mode="token-mean"
 
-train_prompt_bsz=256
+# train_prompt_bsz=256
+# train_prompt_mini_bsz=128
+train_prompt_bsz=512
+train_prompt_mini_bsz=256
 n_resp_per_prompt=16
-train_prompt_mini_bsz=128
 
 # minimum nodes for DeepSeek-V3: 12 nodes
-NNODES=${NNODES:-64}
+NNODES=${NNODES:-128}
 
 RAY_DATA_HOME=${RAY_DATA_HOME:-"${HOME}/myCodeLab/host/downloads"}
 
@@ -198,13 +210,12 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     trainer.experiment_name="${exp_name}" \
     trainer.n_gpus_per_node=8 \
     trainer.nnodes="${NNODES}" \
-    trainer.val_before_train=False \
+    trainer.val_before_train=True \
     trainer.test_freq=10 \
     trainer.save_freq=100 \
     trainer.total_epochs=10 \
     trainer.default_local_dir="${CKPTS_DIR}" \
     trainer.resume_mode=auto \
-    trainer.val_before_train=True \
     trainer.log_val_generations=10
     # trainer.log_val_generations=10 \
     # actor_rollout_ref.actor.profiler.enable=True \
