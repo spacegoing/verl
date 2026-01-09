@@ -15,7 +15,7 @@ env_vars:
   # NCCL_SOCKET_IFNAME: "eth0"
   # Useful debugging flags we've identified.
   # NCCL_DEBUG: "INFO"
-  # TORCH_NCCL_ASYNC_ERROR_HANDLING: "1"
+  TORCH_NCCL_ASYNC_ERROR_HANDLING: "1"
   # TORCH_NCCL_BLOCKING_WAIT: "0"
   # TORCH_DISTRIBUTED_DEBUG: "INFO"
   # CUDA_LAUNCH_BLOCKING: "1"
@@ -99,7 +99,6 @@ env_vars:
   # NCCL_IB_DISABLE: "0"
   # NCCL_IB_RETRY_CNT: "7"
   # NCCL_IB_PCI_RELAXED_ORDERING: "1"
-  # NCCL_NVLS_ENABLE: "1"
 
   # # UCX configuration for RDMA
   # UCX_TLS: "ib,cuda_copy,cuda_ipc"

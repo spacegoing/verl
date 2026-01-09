@@ -11,6 +11,16 @@ set -xeuo pipefail
 # pip3 install git+https://github.com/ISEEKYAN/mbridge
 # 3. remove the `quantization_config` in the DeepSeek-V3's `config.json` and 
 # set `num_nextn_predict_layers=0` to disable MTP, which is not currently supported
+export http_proxy="http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+export https_proxy="http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+export HTTP_PROXY="http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+export HTTPS_PROXY="http://jdtcom:709a64b73eb3@10.119.176.202:3128"
+export no_proxy="localhost,127.0.0.1"
+export NO_PROXY="localhost,127.0.0.1"
+
+export NCCL_NVLS_ENABLE="0"
+# export NCCL_DEBUG=INFO
+export TORCH_NCCL_ASYNC_ERROR_HANDLING=1
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOGFILE="logs/run_${TIMESTAMP}.log"
@@ -44,33 +54,36 @@ kl_loss_coef=0.001
 clip_ratio_low=0.2
 clip_ratio_high=0.28
 
-max_prompt_length=$((1024 * 2))
-max_response_length=$((1024 * 8))
+max_prompt_length=$((1024 * 4))
+max_response_length=$((1024 * 28))
 enable_overlong_buffer=True
 overlong_buffer_len=$((1024 * 4))
-overlong_penalty_factor=1.0
+overlong_penalty_factor=0.8
 
 loss_agg_mode="token-mean"
 
 train_prompt_bsz=256
-n_resp_per_prompt=8
 train_prompt_mini_bsz=128
+n_resp_per_prompt=8
+# train_prompt_bsz=512
+# train_prompt_mini_bsz=256
+# n_resp_per_prompt=16
 
 # minimum nodes for DeepSeek-V3: 12 nodes
 NNODES=${NNODES:-64}
 
 RAY_DATA_HOME=${RAY_DATA_HOME:-"${HOME}/myCodeLab/host/downloads"}
 
-MODEL_PATH=/public/zhangyuqi60/hf_outputs/task-v3/cal-dpo
+MODEL_PATH=/public/lichang93/stCodeLab/downloads/models/750B_Math84
 
 TRAIN_FILE=$RAY_DATA_HOME/datasets/dapo_data/dapo-math-17k.parquet
 TEST_FILE=$RAY_DATA_HOME/datasets/dapo_data/aime-2024.parquet
 
 # Algorithm
-temperature=1.0
-top_p=1.0
+temperature=0.6
+top_p=0.8
 top_k=-1 # 0 for HF rollout, -1 for vLLM rollout
-val_top_p=0.7
+val_top_p=0.8
 
 # Performance Related Parameter
 use_dynamic_bsz=True
@@ -200,7 +213,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     trainer.experiment_name="${exp_name}" \
     trainer.n_gpus_per_node=8 \
     trainer.nnodes="${NNODES}" \
-    trainer.val_before_train=False \
+    trainer.val_before_train=True \
     trainer.test_freq=10 \
     trainer.save_freq=100 \
     trainer.total_epochs=10 \
