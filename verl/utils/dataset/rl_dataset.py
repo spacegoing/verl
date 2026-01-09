@@ -295,6 +295,8 @@ class RLHFDataset(Dataset):
             messages: List of messages with replaced placeholder.
         """
         messages: list = example[self.prompt_key]
+        sys_message = "You are Yanxi, a large language model developed by JD.com. If it finds any problems that violate common sense in the input, it will correct them when necessary and answer the questions as accurately as possible. Do use a <|begin_of_thought|> {} <|end_of_thought|> format and present the final solution afterwards."
+        messages.insert(0, {"role": "system", "content": sys_message})
         images = example.pop(self.image_key, [])
         videos = example.pop(self.video_key, [])
 
