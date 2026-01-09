@@ -227,6 +227,8 @@ class RLHFDataset(Dataset):
         """
         row_dict: dict = self.dataframe[item]
         messages = self._build_messages(row_dict)
+        sys_message = "You are Yanxi, a large language model developed by JD.com. If it finds any problems that violate common sense in the input, it will correct them when necessary and answer the questions as accurately as possible. Do use a <|begin_of_thought|> {} <|end_of_thought|> format and present the final solution afterwards."
+        messages.insert(0, {"role": "system", "content": sys_message})
         model_inputs = {}
 
         if self.processor is not None:
