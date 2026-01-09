@@ -19,7 +19,7 @@ export no_proxy="localhost,127.0.0.1"
 export NO_PROXY="localhost,127.0.0.1"
 
 export NCCL_NVLS_ENABLE="0"
-export NCCL_DEBUG=INFO
+# export NCCL_DEBUG=INFO
 export TORCH_NCCL_ASYNC_ERROR_HANDLING=1
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
