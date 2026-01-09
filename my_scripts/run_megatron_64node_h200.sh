@@ -105,7 +105,7 @@ CP=1
 LAST_LAYER=${LAST_LAYER:-1}
 
 project_name='750B'
-rollout_engine='vllm'
+rollout_engine='sglang'
 exp_name="${project_name}-${rollout_engine}-${NNODES}-pp${train_pp}-tp${train_tp}-ep${EP}-actor-length${actor_ppo_max_token_len}"
 CKPTS_DIR=/root/myCodeLab/host/verl/ckpts/${project_name}/${exp_name}
 USE_DIST_CKPT=False
@@ -217,9 +217,9 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     trainer.experiment_name="${exp_name}" \
     trainer.n_gpus_per_node=8 \
     trainer.nnodes="${NNODES}" \
-    trainer.val_before_train=False \
+    trainer.val_before_train=True \
     trainer.test_freq=10 \
-    trainer.save_freq=100 \
+    trainer.save_freq=20 \
     trainer.total_epochs=10 \
     trainer.default_local_dir="${CKPTS_DIR}" \
     trainer.resume_mode=auto \
