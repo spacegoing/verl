@@ -13,7 +13,8 @@ set -xeuo pipefail
 # set `num_nextn_predict_layers=0` to disable MTP, which is not currently supported
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-LOGFILE="logs/run_${TIMESTAMP}.log"
+COMMIT_ID=$(git rev-parse --short=8 HEAD)
+LOGFILE="logs/run_${TIMESTAMP}_${COMMIT_ID}.log"
 exec &> >(tee -a "$LOGFILE")
 echo "Logging all output to: $LOGFILE"
 
@@ -55,20 +56,20 @@ train_prompt_mini_bsz=128
 
 
 # minimum nodes for DeepSeek-V3: 12 nodes
-NNODES=${NNODES:-2}
+NNODES=${NNODES:-4}
 
 RAY_DATA_HOME=${RAY_DATA_HOME:-"${HOME}/myCodeLab/host/downloads"}
 
-MODEL_PATH=$RAY_DATA_HOME/models/Moonlight-16B-A3B
+MODEL_PATH=$RAY_DATA_HOME/models/Moonlight16B
 
 TRAIN_FILE=$RAY_DATA_HOME/datasets/dapo_data/dapo-math-17k.parquet
 TEST_FILE=$RAY_DATA_HOME/datasets/dapo_data/aime-2024.parquet
 
 # Algorithm
-temperature=1.0
-top_p=1.0
+temperature=0.6
+top_p=0.8
 top_k=-1 # 0 for HF rollout, -1 for vLLM rollout
-val_top_p=0.7
+val_top_p=0.8
 
 # Performance Related Parameter
 use_dynamic_bsz=True
@@ -78,7 +79,7 @@ offload=True
 optim_offload=${OFFLOAD_OPTIM:-True}
 optimizer_offload_fraction=${OFFLOAD_FRACTION:-1.}
 
-gen_tp=1
+gen_tp=2
 train_tp=${TP:-1}
 train_pp=${PP:-1}
 EP=${EP:-8}
@@ -88,7 +89,7 @@ LAST_LAYER=${LAST_LAYER:-1}
 
 
 project_name='moonlight'
-exp_name="moonlight-${NNODES}-pp${train_pp}-tp${train_tp}-ep${EP}-actor-length${actor_ppo_max_token_len}"
+exp_name="${project_name}-${rollout_engine}-${NNODES}-pp${train_pp}-tp${train_tp}-ep${EP}-actlen${actor_ppo_max_token_len}-${COMMIT_ID}"
 CKPTS_DIR=/root/myCodeLab/host/verl/ckpts/${project_name}/${exp_name}
 USE_DIST_CKPT=False
 
@@ -116,7 +117,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     algorithm.adv_estimator=${adv_estimator} \
     algorithm.use_kl_in_reward=${use_kl_in_reward} \
     algorithm.kl_ctrl.kl_coef=${kl_coef} \
-    actor_rollout_ref.model.use_fused_kernels=True \
+    actor_rollout_ref.model.use_fused_kernels=False \
     actor_rollout_ref.actor.megatron.use_mbridge=True \
     actor_rollout_ref.actor.use_kl_loss=${use_kl_loss} \
     actor_rollout_ref.actor.kl_loss_coef=${kl_loss_coef} \
