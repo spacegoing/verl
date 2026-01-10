@@ -23,7 +23,8 @@ export NCCL_NVLS_ENABLE="0"
 export TORCH_NCCL_ASYNC_ERROR_HANDLING=1
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-LOGFILE="logs/run_${TIMESTAMP}.log"
+COMMIT_ID=$(git rev-parse --short=8 HEAD)
+LOGFILE="logs/run_${TIMESTAMP}_${COMMIT_ID}.log"
 exec &> >(tee -a "$LOGFILE")
 echo "Logging all output to: $LOGFILE"
 
@@ -64,12 +65,12 @@ loss_agg_mode="token-mean"
 
 # train_prompt_bsz=256
 # train_prompt_mini_bsz=128
-train_prompt_bsz=512
-train_prompt_mini_bsz=256
+train_prompt_bsz=32
+train_prompt_mini_bsz=16
 n_resp_per_prompt=16
 
 # minimum nodes for DeepSeek-V3: 12 nodes
-NNODES=${NNODES:-128}
+NNODES=${NNODES:-64}
 
 RAY_DATA_HOME=${RAY_DATA_HOME:-"${HOME}/myCodeLab/host/downloads"}
 
@@ -92,15 +93,17 @@ offload=True
 optim_offload=False
 optimizer_offload_fraction=${OFFLOAD_FRACTION:-0.}
 
-gen_tp=16
+gen_tp=32
 train_tp=${TP:-1}
 train_pp=${PP:-16}
 EP=${EP:-32}
 ETP=1
 CP=1
+LAST_LAYER=${LAST_LAYER:-1}
 
 project_name='750B'
-exp_name="${project_name}-${NNODES}-pp${train_pp}-tp${train_tp}-ep${EP}-actor-length${actor_ppo_max_token_len}"
+rollout_engine='sglang'
+exp_name="${project_name}-${rollout_engine}-${NNODES}-pp${train_pp}-tp${train_tp}-ep${EP}-actlen${actor_ppo_max_token_len}-${COMMIT_ID}"
 CKPTS_DIR=/root/myCodeLab/host/verl/ckpts/${project_name}/${exp_name}
 USE_DIST_CKPT=False
 
@@ -124,7 +127,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     data.trust_remote_code=True \
     actor_rollout_ref.model.trust_remote_code=True \
     actor_rollout_ref.rollout.n=${n_resp_per_prompt} \
-    actor_rollout_ref.rollout.name=vllm \
+    actor_rollout_ref.rollout.name="${rollout_engine}" \
     algorithm.adv_estimator=${adv_estimator} \
     algorithm.use_kl_in_reward=${use_kl_in_reward} \
     algorithm.kl_ctrl.kl_coef=${kl_coef} \
@@ -172,7 +175,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     actor_rollout_ref.rollout.temperature=${temperature} \
     actor_rollout_ref.rollout.top_p=${top_p} \
     actor_rollout_ref.rollout.top_k=${top_k} \
-    actor_rollout_ref.nccl_timeout=1200 \
+    actor_rollout_ref.nccl_timeout=3600 \
     actor_rollout_ref.rollout.val_kwargs.temperature=${temperature} \
     actor_rollout_ref.rollout.val_kwargs.top_p=${val_top_p} \
     actor_rollout_ref.rollout.val_kwargs.top_k=${top_k} \
@@ -199,6 +202,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     +actor_rollout_ref.actor.megatron.override_transformer_config.moe_permute_fusion=True \
     +actor_rollout_ref.actor.megatron.override_transformer_config.account_for_embedding_in_pipeline_split=False \
     +actor_rollout_ref.actor.megatron.override_transformer_config.account_for_loss_in_pipeline_split=False \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.num_layers_in_last_pipeline_stage=${LAST_LAYER} \
     reward_model.reward_manager=dapo \
     +reward_model.reward_kwargs.overlong_buffer_cfg.enable=${enable_overlong_buffer} \
     +reward_model.reward_kwargs.overlong_buffer_cfg.len=${overlong_buffer_len} \
