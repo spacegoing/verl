@@ -66,8 +66,8 @@ overlong_penalty_factor=0.8
 
 loss_agg_mode="token-mean"
 
-train_prompt_bsz=256
-train_prompt_mini_bsz=128
+train_prompt_bsz=32
+train_prompt_mini_bsz=16
 n_resp_per_prompt=8
 # train_prompt_bsz=512
 # train_prompt_mini_bsz=256
@@ -179,7 +179,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     actor_rollout_ref.rollout.temperature=${temperature} \
     actor_rollout_ref.rollout.top_p=${top_p} \
     actor_rollout_ref.rollout.top_k=${top_k} \
-    actor_rollout_ref.nccl_timeout=1200 \
+    actor_rollout_ref.nccl_timeout=3600 \
     actor_rollout_ref.rollout.val_kwargs.temperature=${temperature} \
     actor_rollout_ref.rollout.val_kwargs.top_p=${val_top_p} \
     actor_rollout_ref.rollout.val_kwargs.top_k=${top_k} \
