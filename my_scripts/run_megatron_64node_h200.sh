@@ -26,7 +26,8 @@ export TORCH_NCCL_ASYNC_ERROR_HANDLING=1
 # export VLLM_ATTENTION_BACKEND=FLEX_ATTENTION
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-LOGFILE="logs/run_${TIMESTAMP}.log"
+COMMIT_ID=$(git rev-parse --short=8 HEAD)
+LOGFILE="logs/run_${TIMESTAMP}_${COMMIT_ID}.log"
 exec &> >(tee -a "$LOGFILE")
 echo "Logging all output to: $LOGFILE"
 
@@ -106,7 +107,7 @@ LAST_LAYER=${LAST_LAYER:-1}
 
 project_name='750B'
 rollout_engine='vllm'
-exp_name="${project_name}-${rollout_engine}-${NNODES}-pp${train_pp}-tp${train_tp}-ep${EP}-actor-length${actor_ppo_max_token_len}"
+exp_name="${project_name}-${rollout_engine}-${NNODES}-pp${train_pp}-tp${train_tp}-ep${EP}-actlen${actor_ppo_max_token_len}-${COMMIT_ID}"
 CKPTS_DIR=/root/myCodeLab/host/verl/ckpts/${project_name}/${exp_name}
 USE_DIST_CKPT=False
 
