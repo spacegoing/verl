@@ -379,6 +379,10 @@ class vLLMRollout(BaseRollout):
                 ] * batch_size
 
         # users can customize different sampling_params at different run
+        if kwargs is None:
+            kwargs = {"logprobs": None}
+        else:
+            kwargs["logprobs"] = None
         with self.update_sampling_params(**kwargs):
             outputs = self.inference_engine.generate(
                 prompts=vllm_inputs,  # because we have already convert it to prompt token id
