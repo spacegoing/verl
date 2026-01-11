@@ -1,3 +1,6 @@
+ckpts
+wandb*
+logs
 
 **/*.pt
 **/checkpoints
