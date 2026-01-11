@@ -81,7 +81,7 @@ optimizer_offload_fraction=${OFFLOAD_FRACTION:-1.}
 
 gen_tp=2
 train_tp=${TP:-1}
-train_pp=${PP:-1}
+train_pp=${PP:-2}
 EP=${EP:-8}
 ETP=1
 CP=1
@@ -89,6 +89,7 @@ LAST_LAYER=${LAST_LAYER:-1}
 
 
 project_name='moonlight'
+rollout_engine='vllm'
 exp_name="${project_name}-${rollout_engine}-${NNODES}-pp${train_pp}-tp${train_tp}-ep${EP}-actlen${actor_ppo_max_token_len}-${COMMIT_ID}"
 CKPTS_DIR=/root/myCodeLab/host/verl/ckpts/${project_name}/${exp_name}
 USE_DIST_CKPT=False
@@ -113,7 +114,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     data.trust_remote_code=True \
     actor_rollout_ref.model.trust_remote_code=True \
     actor_rollout_ref.rollout.n=${n_resp_per_prompt} \
-    actor_rollout_ref.rollout.name=vllm \
+    actor_rollout_ref.rollout.name=${rollout_engine} \
     algorithm.adv_estimator=${adv_estimator} \
     algorithm.use_kl_in_reward=${use_kl_in_reward} \
     algorithm.kl_ctrl.kl_coef=${kl_coef} \
@@ -188,7 +189,7 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     +actor_rollout_ref.actor.megatron.override_transformer_config.moe_permute_fusion=True \
     +actor_rollout_ref.actor.megatron.override_transformer_config.account_for_embedding_in_pipeline_split=False \
     +actor_rollout_ref.actor.megatron.override_transformer_config.account_for_loss_in_pipeline_split=False \
-    +actor_rollout_ref.actor.megatron.override_transformer_config.num_layers_in_last_pipeline_stage=${LAST_LAYER} \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.pipeline_model_parallel_layout="'Et*14|t*13L'" \
     reward_model.reward_manager=dapo \
     +reward_model.reward_kwargs.overlong_buffer_cfg.enable=${enable_overlong_buffer} \
     +reward_model.reward_kwargs.overlong_buffer_cfg.len=${overlong_buffer_len} \
@@ -215,4 +216,5 @@ RAY_ADDRESS='auto' ray job submit --runtime-env="${RUNTIME_ENV}" -- \
     # actor_rollout_ref.actor.profiler.enable=True \
     # actor_rollout_ref.actor.profiler.all_ranks=$PROFILE_RANKS_ALL $@
 
+    # +actor_rollout_ref.actor.megatron.override_transformer_config.num_layers_in_last_pipeline_stage=${LAST_LAYER} \
 # actor_rollout_ref.actor.profiler.ranks=$PROFILE_RANKS \
