@@ -57,7 +57,27 @@ def hf_tokenizer(name_or_path, correct_pad_token=True, correct_gemma2=True, **kw
         )
         kwargs["eos_token"] = "<end_of_turn>"
         kwargs["eos_token_id"] = 107
-    tokenizer = AutoTokenizer.from_pretrained(name_or_path, **kwargs)
+    import time
+    import sys
+    # Retry loop to handle the "AttributeError" race condition
+    max_retries = 10
+    for attempt in range(max_retries):
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(name_or_path, **kwargs)
+            return tokenizer
+        except (AttributeError, ImportError) as e:
+            # Check if this is the specific race condition error
+            if "TikTokenTokenizer" in str(e) or "module" in str(e):
+                if attempt < max_retries - 1:
+                    print(f"[Verl Fix] Tokenizer race condition detected (Attempt {attempt+1}/{max_retries}). Sleeping 3s...")
+                    time.sleep(3)
+                    # CRITICAL: Force python to reload the bad module
+                    # This clears the "empty" module from memory so we can import the full one
+                    keys_to_remove = [k for k in sys.modules if 'tokenization_moonshot' in k]
+                    for k in keys_to_remove:
+                        del sys.modules[k]
+                    continue
+            raise e
     if correct_pad_token:
         set_pad_token_id(tokenizer)
     return tokenizer
